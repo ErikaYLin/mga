@@ -1,0 +1,13 @@
+\name{mga}
+\alias{mga}
+\title{Process and analyze raw microbial genetic sequences}
+\usage{
+mga(fastq.Fs, fastq.Rs, filtFs, filtRs, refFasta, metadata = NULL, tree.args = list(k = 4, inv = 0.2, model = "GTR", rearrangement = "stochastic"), network.args = list(type = "taxa", distance = "jaccard", max.dist = 0.45, keep.isolates = TRUE), seed = 100, multithread = TRUE)
+mga.netfree(fastq.Fs, fastq.Rs, filtFs, filtRs, refFasta, metadata = NULL, tree.args = list(k = 4, inv = 0.2, model = "GTR", rearrangement = "stochastic"), seed = 100, multithread = TRUE)
+}
+\description{
+Prints 'Hello, world!'.
+}
+\examples{
+
+}
