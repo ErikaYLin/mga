@@ -3,13 +3,8 @@
 \alias{mga.netfree}
 \title{Process and analyze raw microbial genetic sequences}
 \usage{
-mga(fastq.Fs, fastq.Rs, filtFs, filtRs, refFasta, metadata = NULL,
-tree.args = list(k = 4, inv = 0.2, model = "GTR", rearrangement = "stochastic"),
-network.args = list(type = "taxa", distance = "jaccard", max.dist = 0.45,
-keep.isolates = TRUE), seed = 100, multithread = TRUE)
-mga.netfree(fastq.Fs, fastq.Rs, filtFs, filtRs, refFasta,
-metadata = NULL, tree.args = list(k = 4, inv = 0.2, model = "GTR",
-rearrangement = "stochastic"), seed = 100, multithread = TRUE)
+mga(fastq.Fs, fastq.Rs, filtFs, filtRs, refFasta, metadata = NULL, tree.args = list(k = 4, inv = 0.2, model = "GTR", rearrangement = "stochastic"), network.args = list(type = "taxa", distance = "jaccard", max.dist = 0.45, keep.isolates = TRUE), seed = 100, multithread = TRUE)
+mga.netfree(fastq.Fs, fastq.Rs, filtFs, filtRs, refFasta, metadata = NULL, tree.args = list(k = 4, inv = 0.2, model = "GTR", rearrangement = "stochastic"), seed = 100, multithread = TRUE)
 }
 \description{
 Simple microbiome analysis by processing raw genetic sequencing data to produce a \code{phyloseq-class} object with tabulated OTUs, taxonomic classification, phylogenetic trees, and sample metadata. \code{mga} also constructs co-occurrence networks, and computes metrics of community structure and network topology. \code{mga.netfree} excludes  co-occurrence network construction and metrics.
@@ -51,16 +46,16 @@ Returns a list of list of the following objects:
 %%\seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 %%}
-\examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
+%%\examples{
+%%##---- Should be DIRECTLY executable !! ----
+%%##-- ==>  Define data, use random,
+%%##--	or do  help(data=index)  for the standard data sets.
 
-## The function is currently defined as
-function (x)
-{
-  }
-}
+%%## The function is currently defined as
+%%function (x)
+%%{
+%%  }
+%%}
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory (show via RShowDoc("KEYWORDS")):
 % \keyword{ ~kwd1 }
