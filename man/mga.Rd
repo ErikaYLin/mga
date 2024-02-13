@@ -4,6 +4,7 @@
 \title{Process and analyze raw microbial genetic sequences}
 \usage{
 mga(fastq.Fs, fastq.Rs, filtFs, filtRs, refFasta, metadata = NULL, tree.args = list(k = 4, inv = 0.2, model = "GTR", rearrangement = "stochastic"), network.args = list(type = "taxa", distance = "jaccard", max.dist = 0.45, keep.isolates = TRUE), seed = 100, multithread = TRUE)
+
 mga.netfree(fastq.Fs, fastq.Rs, filtFs, filtRs, refFasta, metadata = NULL, tree.args = list(k = 4, inv = 0.2, model = "GTR", rearrangement = "stochastic"), seed = 100, multithread = TRUE)
 }
 \description{
@@ -14,6 +15,7 @@ Simple microbiome analysis by processing raw genetic sequencing data to produce 
   \item{filtFs, filtRs}{File paths for filtered and trimmed forward (Fs) and reverse (Rs) sequences.}
   \item{refFasta}{A file path of reference FASTA to be used for taxonomic classification.}
   \item{metadata}{Sample metadata in list or data frame format.}
+  \item{make.unique}{A logical argument that determines if all unclassified taxa of the same higher-order taxon are to be considered as unique taxa. \code{TRUE} makes unclassified taxa unique by numbering replicates.}
   \item{tree.args}{List of the parameters fed into functions from the \code{phangorn} package and \code{stats::update()} for constructing phylogenetic trees for each sample. See \code{phangorn} for a list of available arguments.}
   \item{network.args}{List of the parameters fed into \code{make_network()} from the \code{phyloseq} package used in constructing the co-occurrence network for each sample. See \code{make_network()} for additional arguments available.}
   \item{seed}{Any integer value used to set the seed.}

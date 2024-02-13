@@ -1,19 +1,20 @@
 #' @export
 # Microbial Genetic Analysis with co-occurrence network construction
 mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fastq files
-                   filtFs, filtRs, # file paths for filtered and trimmed sequences
-                   refFasta, # file path of reference FASTA for taxonomic classification
-                   metadata = NULL, # sample metadata in list or data frame format
-                   tree.args = list(k = 4,
-                                    inv = 0.2,
-                                    model = "GTR", # "JC", "F81", "SYM", "GTR", etc. **SEE phangorn::optim.pml FOR ALL MODELS**
-                                    rearrangement = "stochastic"), # "none", "NNI", "stochastic", "ratchet"
-                   network.args = list(type = "taxa", # "samples"
-                                       distance = "jaccard", # "jaccard", "unifrac", "wunifrac", DPCoA", "jsd"
-                                       max.dist = 0.45, # default distance set by `make_network` function from `phyloseq` package is 0.4
-                                       keep.isolates = TRUE),
-                   seed = 100,
-                   multithread = TRUE) {
+                filtFs, filtRs, # file paths for filtered and trimmed sequences
+                refFasta, # file path of reference FASTA for taxonomic classification
+                metadata = NULL, # sample metadata in list or data frame format
+                make.unique = TRUE,  # defines all unclassified taxa as being unique
+                tree.args = list(k = 4,
+                                 inv = 0.2,
+                                 model = "GTR", # "JC", "F81", "SYM", "GTR", etc. **SEE phangorn::optim.pml FOR ALL MODELS**
+                                 rearrangement = "stochastic"), # "none", "NNI", "stochastic", "ratchet"
+                network.args = list(type = "taxa", # "samples"
+                                    distance = "jaccard", # "jaccard", "unifrac", "wunifrac", DPCoA", "jsd"
+                                    max.dist = 0.45, # default distance set by `make_network` function from `phyloseq` package is 0.4
+                                    keep.isolates = TRUE),
+                seed = 100,
+                multithread = TRUE) {
 
 
   set.seed(seed)
@@ -61,56 +62,86 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
   message("Taxonomic classification based on chosen reference FASTA.")
 
   # Assign taxonomy to the ASVs based on chosen reference FASTA and build a taxonomy table
-  taxTab <- dada2::assignTaxonomy(ASVtab,
-                                  refFasta = refFasta,
-                                  multithread = multithread)
+  taxTab2 <- dada2::assignTaxonomy(ASVtab,
+                                   refFasta = refFasta,
+                                   multithread = multithread)
 
   message("Labelling unclassified taxa.")
 
   # Remove the prefix from taxa names
   # Removal of prefixes follow the workflow by Hui (2021).
   # https://www.yanh.org/2021/01/01/microbiome-r/#build-phyloseq-project
-  taxTab <- data.frame(row.names = row.names(taxTab),
-                       Kingdom = stringr::str_replace(taxTab[,1], "k__",""),
-                       Phylum = stringr::str_replace(taxTab[,2], "p__",""),
-                       Class = stringr::str_replace(taxTab[,3], "c__",""),
-                       Order = stringr::str_replace(taxTab[,4], "o__",""),
-                       Family = stringr::str_replace(taxTab[,5], "f__",""),
-                       Genus = stringr::str_replace(taxTab[,6], "g__",""),
-                       Species = stringr::str_replace(taxTab[,7], "s__",""))
+  if ("k_" %in% taxTab2[,1]) {
+    taxTab <- data.frame(row.names = row.names(taxTab2),
+                         Kingdom = stringr::str_replace(taxTab2[,1], "k__",""),
+                         Phylum = stringr::str_replace(taxTab2[,2], "p__",""),
+                         Class = stringr::str_replace(taxTab2[,3], "c__",""),
+                         Order = stringr::str_replace(taxTab2[,4], "o__",""),
+                         Family = stringr::str_replace(taxTab2[,5], "f__",""),
+                         Genus = stringr::str_replace(taxTab2[,6], "g__",""),
+                         Species = stringr::str_replace(taxTab2[,7], "s__",""))
+  } else {taxTab <- data.frame(taxTab2)}
 
   # Rename "NA" elements to "Unclassified __"
-  for (i in 1:nrow(taxTab)) {
-    if (is.na(taxTab[i, 2]) || taxTab[i, 2] == "") {
-      kingdom <- paste("Unclassified", taxTab[i, 1], sep = "_")
-      taxTab[i, 2:7] <- kingdom
-    } else if (is.na(taxTab[i, 3]) || taxTab[i, 3] == "") {
-      phylum <- paste("Unclassified", taxTab[i, 2], sep = "_")
-      taxTab[i, 3:7] <- phylum
-    } else if (is.na(taxTab[i, 4]) || taxTab[i, 4] == "") {
-      class <- paste("Unclassified", taxTab[i, 3], sep = "_")
-      taxTab[i, 4:7] <- class
-    } else if (is.na(taxTab[i, 5]) || taxTab[i, 5] == "") {
-      order <- paste("Unclassified", taxTab[i, 4], sep = "_")
-      taxTab[i, 5:7] <- order
-    } else if (is.na(taxTab[i, 6]) || taxTab[i, 6] == "") {
-      family <- paste("Unclassified", taxTab[i, 5], sep = "_")
-      taxTab[i, 6:7] <- family
-    } else if (is.na(taxTab[i, 7]) || taxTab[i, 7] == "") {
-      taxTab$Species[i] <- paste("Unclassified", taxTab$Genus[i], sep = "_")
+  if (ncol(taxTab) == 7) {
+    for (i in 1:nrow(taxTab)) {
+      if (is.na(taxTab[i, 2]) || taxTab[i, 2] == "") {
+        kingdom <- paste("Unclassified", taxTab[i, 1], sep = "_")
+        taxTab[i, 2:7] <- kingdom
+      } else if (is.na(taxTab[i, 3]) || taxTab[i, 3] == "") {
+        phylum <- paste("Unclassified", taxTab[i, 2], sep = "_")
+        taxTab[i, 3:7] <- phylum
+      } else if (is.na(taxTab[i, 4]) || taxTab[i, 4] == "") {
+        class <- paste("Unclassified", taxTab[i, 3], sep = "_")
+        taxTab[i, 4:7] <- class
+      } else if (is.na(taxTab[i, 5]) || taxTab[i, 5] == "") {
+        order <- paste("Unclassified", taxTab[i, 4], sep = "_")
+        taxTab[i, 5:7] <- order
+      } else if (is.na(taxTab[i, 6]) || taxTab[i, 6] == "") {
+        family <- paste("Unclassified", taxTab[i, 5], sep = "_")
+        taxTab[i, 6:7] <- family
+      } else if (is.na(taxTab[i, 7]) || taxTab[i, 7] == "") {
+        taxTab$Species[i] <- paste("Unclassified", taxTab$Genus[i], sep = "_")
+      }
+    }
+  } else if (ncol(taxTab) == 6) {
+    for (i in 1:nrow(taxTab)) {
+      if (is.na(taxTab[i, 2]) || taxTab[i, 2] == "") {
+        kingdom <- paste("Unclassified", taxTab[i, 1], sep = "_")
+        taxTab[i, 2:6] <- kingdom
+      } else if (is.na(taxTab[i, 3]) || taxTab[i, 3] == "") {
+        phylum <- paste("Unclassified", taxTab[i, 2], sep = "_")
+        taxTab[i, 3:6] <- phylum
+      } else if (is.na(taxTab[i, 4]) || taxTab[i, 4] == "") {
+        class <- paste("Unclassified", taxTab[i, 3], sep = "_")
+        taxTab[i, 4:6] <- class
+      } else if (is.na(taxTab[i, 5]) || taxTab[i, 5] == "") {
+        order <- paste("Unclassified", taxTab[i, 4], sep = "_")
+        taxTab[i, 5:6] <- order
+      } else if (is.na(taxTab[i, 6]) || taxTab[i, 6] == "") {
+        family <- paste("Unclassified", taxTab[i, 5], sep = "_")
+        taxTab[i, 6:6] <- family
+      }
     }
   }
 
+  # Add species column if missing
+  if (ncol(taxTab) == 6) {
+    taxTab$Species = paste(taxTab$Genus, "sp", sep = "_")
+  }
+
   # Number replicates of unclassified taxa
-  for(i in 1: ncol(taxTab)){
-    # finding all unique unclassified taxa per column (taxon) and assigning them to UNIQUE
-    UNIQUE <- unique(gsub("Unclassified_", "",
-                          taxTab[,i][grepl("Unclassified_", taxTab[,i])]))
-    # nested for loop that repeats the assessment within the same column for index j
-    for(j in 1:length(UNIQUE)){
-      # criterion to search for the unclassified taxa and make them unique
-      criterion <- paste("Unclassified_", UNIQUE[j], sep = "")
-      taxTab[,i][taxTab[,i] == criterion] <- make.unique(taxTab[,i][taxTab[,i] == criterion])
+  if (make.unique == TRUE){
+    for(i in 1: ncol(taxTab)){
+      # finding all unique unclassified taxa per column (taxon) and assigning them to UNIQUE
+      UNIQUE <- unique(gsub("Unclassified_", "",
+                            taxTab[,i][grepl("Unclassified_", taxTab[,i])]))
+      # nested for loop that repeats the assessment within the same column for index j
+      for(j in 1:length(UNIQUE)){
+        # criterion to search for the unclassified taxa and make them unique
+        criterion <- paste("Unclassified_", UNIQUE[j], sep = "")
+        taxTab[,i][taxTab[,i] == criterion] <- make.unique(taxTab[,i][taxTab[,i] == criterion])
+      }
     }
   }
 
@@ -255,13 +286,7 @@ mga.netfree <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse
                     filtFs, filtRs, # file paths for filtered and trimmed sequences
                     refFasta, # file path of reference FASTA for taxonomic classification
                     metadata = NULL, # sample metadata in list or data frame format
-                    # filter.args = list(truncLen = c(240,160),
-                    #                    maxN = 0,
-                    #                    maxEE = c(2,2),
-                    #                    truncQ = 2,
-                    #                    rm.phix = TRUE, # defining max 2 expected errors per read
-                    #                    compress = TRUE,
-                    #                    multithread = FALSE), # On Windows set multithread = FALSE
+                    make.unique = TRUE,  # defines all unclassified taxa as being unique
                     tree.args = list(k = 4,
                                      inv = 0.2,
                                      model = "GTR", # "JC", "F81", "SYM", "GTR", etc. **SEE phangorn::optim.pml FOR ALL MODELS**
@@ -315,56 +340,86 @@ mga.netfree <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse
   message("Taxonomic classification based on chosen reference FASTA.")
 
   # Assign taxonomy to the ASVs based on chosen reference FASTA and build a taxonomy table
-  taxTab <- dada2::assignTaxonomy(ASVtab,
-                                  refFasta = refFasta,
-                                  multithread = multithread)
+  taxTab2 <- dada2::assignTaxonomy(ASVtab,
+                                   refFasta = refFasta,
+                                   multithread = multithread)
 
   message("Labelling unclassified taxa.")
 
   # Remove the prefix from taxa names
   # Removal of prefixes follow the workflow by Hui (2021).
   # https://www.yanh.org/2021/01/01/microbiome-r/#build-phyloseq-project
-  taxTab <- data.frame(row.names = row.names(taxTab),
-                       Kingdom = stringr::str_replace(taxTab[,1], "k__",""),
-                       Phylum = stringr::str_replace(taxTab[,2], "p__",""),
-                       Class = stringr::str_replace(taxTab[,3], "c__",""),
-                       Order = stringr::str_replace(taxTab[,4], "o__",""),
-                       Family = stringr::str_replace(taxTab[,5], "f__",""),
-                       Genus = stringr::str_replace(taxTab[,6], "g__",""),
-                       Species = stringr::str_replace(taxTab[,7], "s__",""))
+  if ("k_" %in% taxTab2[,1]) {
+    taxTab <- data.frame(row.names = row.names(taxTab2),
+                         Kingdom = stringr::str_replace(taxTab2[,1], "k__",""),
+                         Phylum = stringr::str_replace(taxTab2[,2], "p__",""),
+                         Class = stringr::str_replace(taxTab2[,3], "c__",""),
+                         Order = stringr::str_replace(taxTab2[,4], "o__",""),
+                         Family = stringr::str_replace(taxTab2[,5], "f__",""),
+                         Genus = stringr::str_replace(taxTab2[,6], "g__",""),
+                         Species = stringr::str_replace(taxTab2[,7], "s__",""))
+  } else {taxTab <- data.frame(taxTab2)}
 
   # Rename "NA" elements to "Unclassified __"
-  for (i in 1:nrow(taxTab)) {
-    if (is.na(taxTab[i, 2]) || taxTab[i, 2] == "") {
-      kingdom <- paste("Unclassified", taxTab[i, 1], sep = "_")
-      taxTab[i, 2:7] <- kingdom
-    } else if (is.na(taxTab[i, 3]) || taxTab[i, 3] == "") {
-      phylum <- paste("Unclassified", taxTab[i, 2], sep = "_")
-      taxTab[i, 3:7] <- phylum
-    } else if (is.na(taxTab[i, 4]) || taxTab[i, 4] == "") {
-      class <- paste("Unclassified", taxTab[i, 3], sep = "_")
-      taxTab[i, 4:7] <- class
-    } else if (is.na(taxTab[i, 5]) || taxTab[i, 5] == "") {
-      order <- paste("Unclassified", taxTab[i, 4], sep = "_")
-      taxTab[i, 5:7] <- order
-    } else if (is.na(taxTab[i, 6]) || taxTab[i, 6] == "") {
-      family <- paste("Unclassified", taxTab[i, 5], sep = "_")
-      taxTab[i, 6:7] <- family
-    } else if (is.na(taxTab[i, 7]) || taxTab[i, 7] == "") {
-      taxTab$Species[i] <- paste("Unclassified", taxTab$Genus[i], sep = "_")
+  if (ncol(taxTab) == 7) {
+    for (i in 1:nrow(taxTab)) {
+      if (is.na(taxTab[i, 2]) || taxTab[i, 2] == "") {
+        kingdom <- paste("Unclassified", taxTab[i, 1], sep = "_")
+        taxTab[i, 2:7] <- kingdom
+      } else if (is.na(taxTab[i, 3]) || taxTab[i, 3] == "") {
+        phylum <- paste("Unclassified", taxTab[i, 2], sep = "_")
+        taxTab[i, 3:7] <- phylum
+      } else if (is.na(taxTab[i, 4]) || taxTab[i, 4] == "") {
+        class <- paste("Unclassified", taxTab[i, 3], sep = "_")
+        taxTab[i, 4:7] <- class
+      } else if (is.na(taxTab[i, 5]) || taxTab[i, 5] == "") {
+        order <- paste("Unclassified", taxTab[i, 4], sep = "_")
+        taxTab[i, 5:7] <- order
+      } else if (is.na(taxTab[i, 6]) || taxTab[i, 6] == "") {
+        family <- paste("Unclassified", taxTab[i, 5], sep = "_")
+        taxTab[i, 6:7] <- family
+      } else if (is.na(taxTab[i, 7]) || taxTab[i, 7] == "") {
+        taxTab$Species[i] <- paste("Unclassified", taxTab$Genus[i], sep = "_")
+      }
+    }
+  } else if (ncol(taxTab) == 6) {
+    for (i in 1:nrow(taxTab)) {
+      if (is.na(taxTab[i, 2]) || taxTab[i, 2] == "") {
+        kingdom <- paste("Unclassified", taxTab[i, 1], sep = "_")
+        taxTab[i, 2:6] <- kingdom
+      } else if (is.na(taxTab[i, 3]) || taxTab[i, 3] == "") {
+        phylum <- paste("Unclassified", taxTab[i, 2], sep = "_")
+        taxTab[i, 3:6] <- phylum
+      } else if (is.na(taxTab[i, 4]) || taxTab[i, 4] == "") {
+        class <- paste("Unclassified", taxTab[i, 3], sep = "_")
+        taxTab[i, 4:6] <- class
+      } else if (is.na(taxTab[i, 5]) || taxTab[i, 5] == "") {
+        order <- paste("Unclassified", taxTab[i, 4], sep = "_")
+        taxTab[i, 5:6] <- order
+      } else if (is.na(taxTab[i, 6]) || taxTab[i, 6] == "") {
+        family <- paste("Unclassified", taxTab[i, 5], sep = "_")
+        taxTab[i, 6:6] <- family
+      }
     }
   }
 
+  # Add species column if missing
+  if (ncol(taxTab) == 6) {
+    taxTab$Species = paste(taxTab$Genus, "sp", sep = "_")
+  }
+
   # Number replicates of unclassified taxa
-  for(i in 1: ncol(taxTab)){
-    # finding all unique unclassified taxa per column (taxon) and assigning them to UNIQUE
-    UNIQUE <- unique(gsub("Unclassified_", "",
-                          taxTab[,i][grepl("Unclassified_", taxTab[,i])]))
-    # nested for loop that repeats the assessment within the same column for index j
-    for(j in 1:length(UNIQUE)){
-      # criterion to search for the unclassified taxa and make them unique
-      criterion <- paste("Unclassified_", UNIQUE[j], sep = "")
-      taxTab[,i][taxTab[,i] == criterion] <- make.unique(taxTab[,i][taxTab[,i] == criterion])
+  if (make.unique == TRUE){
+    for(i in 1: ncol(taxTab)){
+      # finding all unique unclassified taxa per column (taxon) and assigning them to UNIQUE
+      UNIQUE <- unique(gsub("Unclassified_", "",
+                            taxTab[,i][grepl("Unclassified_", taxTab[,i])]))
+      # nested for loop that repeats the assessment within the same column for index j
+      for(j in 1:length(UNIQUE)){
+        # criterion to search for the unclassified taxa and make them unique
+        criterion <- paste("Unclassified_", UNIQUE[j], sep = "")
+        taxTab[,i][taxTab[,i] == criterion] <- make.unique(taxTab[,i][taxTab[,i] == criterion])
+      }
     }
   }
 
