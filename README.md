@@ -1,6 +1,6 @@
 # mga: Microbial Genetic Analysis
 
-mga is an R package for analyzing microbiomes from raw genetic sequencing data.
+mga is an R package for analyzing microbiomes from raw and filtered amplicon sequencing data.
 
 # Installation:
 
