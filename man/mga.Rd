@@ -3,7 +3,7 @@
 \alias{mga.netfree}
 \title{Process and analyze raw microbial genetic sequences}
 \usage{
-mga(fastq.Fs, fastq.Rs, filtFs, filtRs, refFasta, metadata = NULL, tree.args = list(k = 4, inv = 0.2, model = "GTR", rearrangement = "stochastic"), network = TRUE, network.args = list(type = "taxa", distance = "jaccard", max.dist = 0.45, keep.isolates = TRUE), seed = 100, multithread = TRUE)
+mga(fastq.Fs, fastq.Rs, filtFs, filtRs, refFasta, metadata = NULL, make.unique = TRUE, tree.args = list(k = 4, inv = 0.2, model = "GTR", rearrangement = "stochastic"), network = TRUE, network.args = list(type = "taxa", distance = "jaccard", max.dist = 0.45, keep.isolates = TRUE), seed = 100, multithread = FALSE, verbose = TRUE)
 }
 \description{
 Simple microbiome analysis by processing raw genetic sequencing data to produce a \code{phyloseq-class} object with tabulated OTUs/ASVs, taxonomic classification, phylogenetic trees, and sample metadata. \code{mga} also constructs co-occurrence networks, and computes metrics of community structure and network topology.
