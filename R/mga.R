@@ -312,7 +312,7 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
   return(ps_network)
 }
 
-# # @export
+
 # # Microbial Genetic Analysis without co-occurrence network construction
 # mga.netfree <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fastq files
 #                     filtFs, filtRs, # file paths for filtered and trimmed sequences
