@@ -1,6 +1,6 @@
 Package: mga
 Type: Package
-Title: Microbial Genetic Analysis
+Title: Microbial Genetic Analysis for amplicon data
 Version: 0.1.0
 Date: 2023-11-28
 Author: c(person(c("Erika","Y."), "Lin", email = "erikalin26@gmail.com", role = c("aut","cre")))
