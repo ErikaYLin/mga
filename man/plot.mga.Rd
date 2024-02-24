@@ -13,8 +13,10 @@ Produces plots of \code{mga} objects (phylogenetic tree and co-occurrence networ
 \arguments{
   \item{mga}{A \code{mga} object built using \code{\link{mga}}.}
   \item{type}{The type of plot to draw. Possible types are:
+
   * \code{"tree"} for a phylogenetic tree pulled from \code{\link[phyloseq]{phy_tree}},
   * \code{"network"} for a co-occurrence network pulled from \code{\link[phyloseq]{make_network}} and plotted with \code{\link[phyloseq]{plot_network}}.}
+
   \item{...}{Additional plotting arguments and garphing parameters.}
 
 }

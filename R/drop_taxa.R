@@ -390,5 +390,8 @@ drop_taxa <- function(mga, # mga-class object ##
     mga$degree.samp <- degree.samp
   }
 
+  # Convert to mga-class object
+  mga <- new.mga(mga)
+
   return(mga)
 }
