@@ -4,7 +4,7 @@
 \title{Plotting methods for mga objects
 }
 \description{
-Produces plots of \code{mga} objects (phylogenetic tree and co-occurrence network) using \code{\link[phyloseq]{phyloseq}} plotting methos.
+Produces plots of \code{mga} objects (phylogenetic tree and co-occurrence network) using \code{\link[phyloseq]{phyloseq}} plotting methods.
 }
 \usage{
 \S3method{plot}{mga}(mga, type = "tree", ...)
@@ -12,12 +12,9 @@ Produces plots of \code{mga} objects (phylogenetic tree and co-occurrence networ
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{mga}{A \code{mga} object built using \code{\link{mga}}.}
-  \item{type}{The type of plot to draw. Possible types are:
+  \item{type}{The type of plot to draw. Possible types are: \code{"tree"} for a phylogenetic tree pulled from \code{\link[phyloseq]{phy_tree}}, \code{"network"} for a co-occurrence network pulled from \code{\link[phyloseq]{make_network}} and plotted with \code{\link[phyloseq]{plot_network}}.}
 
-  * \code{"tree"} for a phylogenetic tree pulled from \code{\link[phyloseq]{phy_tree}},
-  * \code{"network"} for a co-occurrence network pulled from \code{\link[phyloseq]{make_network}} and plotted with \code{\link[phyloseq]{plot_network}}.}
-
-  \item{...}{Additional plotting arguments and garphing parameters.}
+  \item{...}{Additional plotting arguments and graphing parameters.}
 
 }
 }
@@ -34,8 +31,8 @@ Produces plots of \code{mga} objects (phylogenetic tree and co-occurrence networ
 %%  ~~further notes~~
 %% }
 
-\seealso{
-\code{\link{mga}} for details on \code{mga-class} objects, \code{\link[phyloseq]{phy_tree}} for phylogenetic tree construction, and \code{\link[phyloseq]{make_network}} and \code{\link[phyloseq]{plot_network}} for details on making and plotting \code{igraph} objects through \code{phyloseq}.
+\note{
+  See also \code{\link{mga}} for details on \code{mga-class} objects, \code{\link[phyloseq]{phy_tree}} for phylogenetic tree construction, \code{\link[ape]{plot.phylo}} for additional phylogenetic tree plotting parameters, and \code{\link[phyloseq]{make_network}} and \code{\link[phyloseq]{plot_network}} for details on making and plotting \code{igraph} objects through \code{phyloseq}.
 }
 %% \examples{
 %% ##---- Should be DIRECTLY executable !! ----

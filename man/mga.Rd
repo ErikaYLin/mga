@@ -31,7 +31,7 @@ Returns a \code{mga-class} object listing the following objects:
     \item{sampledata}{A \code{phyloseq-class} list of the sample metadata provided.}
     \item{ps}{A \code{phyloseq-class} object holding the sequence table, taxonomy table, phylogenetic tree, and the sample metadata in the form of its component data classes: \code{otu_table-class}, \code{taxonomyTable-class}, \code{phylo-class}, \code{sample_data-class}. Storing these objects in a \code{phyloseq-class} object facilitates handling of the data in downstream analyses.}
     \item{net}{An \code{igraph} object for the co-occurrence network constructed. If `network = TRUE`.}
-    \item{results.samples}{A 'data.frame' of sample metadata and the computed community diversity and network tolopology metrics for each sample: Shannon's diversity, Simpson's diversity, richness (rich), phylogenetic diversity (PD), total sequence count (n.indivs), OTU/ASV count (ASVs), number of vertices (vertices) and edges (edges) in the network, network connectivity, and network connectance.}
+    \item{results.samples}{A 'data.frame' of sample metadata and the computed community diversity and network topology metrics for each sample: Shannon's diversity, Simpson's diversity, richness (rich), phylogenetic diversity (PD), total sequence count (n.indivs), OTU/ASV count (ASVs), number of vertices (vertices) and edges (edges) in the network, network connectivity, and network connectance.}
     \item{degree.samp}{A 'data.frame' of the degrees of (number of edges connected to) each vertex in the network for each sample. If `network = TRUE`.}
 }
 %%\references{

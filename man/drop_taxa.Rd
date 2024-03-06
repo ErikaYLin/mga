@@ -17,11 +17,7 @@ drop_taxa(mga, taxa = NULL, network = TRUE, network.args = list(type = "taxa", d
 }
 \value{
 Returns the same \code{mga-class} object, filtered to keep only the taxa specified. See \code{\link{mga}} for the full list of objects returned in a \code{mga-class} object. Note that \code{seqtabAll}, \code{sampledata}, and \code{phylo_tree} remain unchanged from the original \code{mga} object fed into the function.
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+
 }
 \author{Erika Y. Lin
 }
