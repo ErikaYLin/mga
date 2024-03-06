@@ -238,7 +238,7 @@
 #
 
 
-drop_taxa <- function(mga, # mga-class object ##
+drop_taxa <- function(mga, # mga-class object
                       taxa = NULL, # .csv object listing taxa to search for with columns named "taxon" and "group"
                       network = TRUE,
                       network.args = list(type = "taxa", # "samples"
@@ -261,23 +261,55 @@ drop_taxa <- function(mga, # mga-class object ##
 
   # Search for taxa in taxonomy table
   for (j in 1:nrow(taxa)) {
-    # Search in Family
-    if ("Family" %in% taxa$group[j]){
+    # Search in Kingdom
+    if ("Kingdom" | "kingdom" %in% taxa$group[j]){
       for (i in 1:nrow(taxTab)) {
-        if (taxa$taxon[j] %in% taxTab$Family[i]){
+        if (taxa$taxon[j] %in% taxTab$Kingdom[i]){
           taxTab$keep[i] = 1
           taxTab$keep_taxon[i] = taxa$taxon[j]
         }}
+      # Search in Phylum
+    } else if ("Phylum" | "phylum" %in% taxa$group[j]){
+      for (i in 1:nrow(taxTab)) {
+        if (taxa$taxon[j] %in% taxTab$Phylum[i]){
+          taxTab$keep[i] = 1
+          if (is.na(taxTab$keep_taxon[i])){
+            taxTab$keep_taxon[i] = taxa$taxon[j]
+          }}}
+      # Search in Class
+    } else if ("Class" | "class" %in% taxa$group[j]){
+      for (i in 1:nrow(taxTab)) {
+        if (taxa$taxon[j] %in% taxTab$Class[i]){
+          taxTab$keep[i] = 1
+          if (is.na(taxTab$keep_taxon[i])){
+            taxTab$keep_taxon[i] = taxa$taxon[j]
+          }}}
+      # Search in Order
+    } else if ("Order" | "order" %in% taxa$group[j]){
+      for (i in 1:nrow(taxTab)) {
+        if (taxa$taxon[j] %in% taxTab$Order[i]){
+          taxTab$keep[i] = 1
+          if (is.na(taxTab$keep_taxon[i])){
+            taxTab$keep_taxon[i] = taxa$taxon[j]
+          }}}
+      # Search in Family
+    } else if ("Family" | "family" %in% taxa$group[j]){
+      for (i in 1:nrow(taxTab)) {
+        if (taxa$taxon[j] %in% taxTab$Family[i]){
+          taxTab$keep[i] = 1
+          if (is.na(taxTab$keep_taxon[i])){
+            taxTab$keep_taxon[i] = taxa$taxon[j]
+          }}}
       # Search in Genus
-    } else if ("Genus" %in% taxa$group[j]){
+    } else if ("Genus" | "genus" %in% taxa$group[j]){
       for (i in 1:nrow(taxTab)) {
         if (taxa$taxon[j] %in% taxTab$Genus[i]){
           taxTab$keep[i] = 1
           if (is.na(taxTab$keep_taxon[i])){
             taxTab$keep_taxon[i] = taxa$taxon[j]
           }}}
-      # search in Species
-    } else if ("Species" %in% taxa$group[j]){
+      # Search in Species
+    } else if ("Species" | "species" %in% taxa$group[j]){
       for (i in 1:nrow(taxTab)) {
         if (taxa$taxon[j] %in% taxTab$Species[i]){
           taxTab$keep[i] = 1
