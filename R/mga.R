@@ -242,13 +242,13 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
 
   # Alpha species diversity measures
   # Shannon index
-  ps_alpha_div <- phyloseq::estimate_richness(ps, split = TRUE, measure = "Shannon")
+  ps_alpha_div <- phyloseq::estimate_richness(species, split = TRUE, measure = "Shannon")
   # Simpson index
-  ps_alpha_div2 <- phyloseq::estimate_richness(ps, split = TRUE, measure = "Simpson")
+  ps_alpha_div2 <- phyloseq::estimate_richness(species, split = TRUE, measure = "Simpson")
 
   # Phylogenetic diversity
   # Sum all branch lengths in the phylogenetic tree
-  PD <- sum(phyloseq::tree_layout(phyloseq::phy_tree(ps))$edgeDT[["edge.length"]])
+  PD <- sum(phyloseq::tree_layout(phyloseq::phy_tree(species))$edgeDT[["edge.length"]])
 
   if (network) {
 
