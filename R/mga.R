@@ -73,7 +73,6 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
   # Remove the prefix from taxa names
   # Removal of prefixes follow the workflow by Hui (2021).
   # https://www.yanh.org/2021/01/01/microbiome-r/#build-phyloseq-project
-  if ("k_" %in% taxTab2[,1]) {
     taxTab <- data.frame(row.names = row.names(taxTab2),
                          Kingdom = stringr::str_replace(taxTab2[,1], "k__",""),
                          Phylum = stringr::str_replace(taxTab2[,2], "p__",""),
@@ -82,7 +81,6 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
                          Family = stringr::str_replace(taxTab2[,5], "f__",""),
                          Genus = stringr::str_replace(taxTab2[,6], "g__",""),
                          Species = stringr::str_replace(taxTab2[,7], "s__",""))
-  } else {taxTab <- data.frame(taxTab2)}
 
   # Rename "NA" elements to "Unclassified __"
   if (ncol(taxTab) == 7) {
