@@ -153,8 +153,8 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
   # Phylogenetic tree construction follows the workflow by Callahan et al. (2017).
   # https://bioconductor.org/help/course-materials/2017/BioC2017/Day1/Workshops/Microbiome/MicrobiomeWorkflowII.html
   seqs <- dada2::getSequences(ASVtab)
-  # names(seqs) <- seqs # This propagates to the tip labels of the tree # try replacing with: paste(taxTab$Genus, taxTab$Species, sep = "_")
-  names(seqs) <- paste(taxTab$Genus, taxTab$Species, sep = "_")
+  names(seqs) <- seqs # This propagates to the tip labels of the tree
+  # names(seqs) <- paste(taxTab$Genus, taxTab$Species, sep = "_")
   alignment <- DECIPHER::AlignSeqs(Biostrings::DNAStringSet(seqs), anchor=NA, verbose=FALSE)
 
   if (verbose) {message("Fitting the phylogenetic tree.")}
