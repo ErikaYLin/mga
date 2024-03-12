@@ -279,7 +279,8 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
     results.samples <- cbind(results.samples, sample_info)
     # results.samples <- dplyr::relocate(sample.ID, .before = Shannon) # move Sample.ID column to leftmost
 
-    degree.samp <- data.frame(ASVtab[1,], degrees, row.names = colnames(ASVtab))
+    degree.samp <- data.frame(if (group.species){otu_table(species)[1,]} else{ASVtab[1,]}, degrees,
+                              if (group.species){row.names = colnames(otu_table(species))} else{row.names = colnames(ASVtab)}) ################# FIX for species
     colnames(degree.samp)[1] <- sampledata$sample.ID
 
   } else if (network == FALSE) {
