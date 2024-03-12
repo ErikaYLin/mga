@@ -14,7 +14,7 @@ Simple microbiome analysis by processing raw genetic sequencing data to produce 
   \item{refFasta}{A file path of reference FASTA to be used for taxonomic classification.}
   \item{metadata}{Sample metadata in list or data frame format.}
   \item{make.unique}{A logical argument that determines if all unclassified taxa of the same higher-order taxon are to be considered as unique taxa. If \code{TRUE} unclassified taxa are made unique by numbering replicates.}
-  \item{group.species}{When \code{TRUE}, the \code{phyloseq} object and stored ASVs are agglomerated by species for network construction and calculation of diversity indices. If \code{FALSE}, the initial phyloseq object with separate ASVs is used. See \code{\link[phyloseq]{tax_glom}} for details.
+  \item{group.species}{When \code{TRUE}, the \code{phyloseq} object and stored ASVs are agglomerated by species for network construction and calculation of diversity indices. If \code{FALSE}, the initial phyloseq object with separate ASVs is used. See \code{\link[phyloseq]{tax_glom}} for details.}
   \item{tree.args}{List of the parameters fed into functions from the \code{phangorn} package and \code{stats::update()} for constructing phylogenetic trees for each sample. See \code{phangorn} for a list of available arguments.}
   \item{network}{A logical argument that determines if the co-occurrence network analysis is included.}
   \item{network.args}{List of the parameters fed into \code{make_network()} from the \code{phyloseq} package used in constructing the co-occurrence network for each sample. See \code{make_network()} for additional arguments available.}
