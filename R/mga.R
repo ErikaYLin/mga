@@ -81,7 +81,7 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
                        Order = stringr::str_replace(taxTab2[,4], "o__",""),
                        Family = stringr::str_replace(taxTab2[,5], "f__",""),
                        Genus = stringr::str_replace(taxTab2[,6], "g__",""),
-                       if (ncol(taxTab) == 7) {
+                       if (ncol(taxTab2) == 7) {
                        Species = stringr::str_replace(taxTab2[,7], "s__","")})
 
   # Rename "NA" elements to "Unclassified __"
