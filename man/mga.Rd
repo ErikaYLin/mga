@@ -14,6 +14,7 @@ Simple microbiome analysis by processing raw genetic sequencing data to produce 
   \item{refFasta}{A file path of reference FASTA to be used for taxonomic classification.}
   \item{metadata}{Sample metadata in list or data frame format.}
   \item{make.unique}{A logical argument that determines if all unclassified taxa of the same higher-order taxon are to be considered as unique taxa. If \code{TRUE} unclassified taxa are made unique by numbering replicates.}
+  \item{group.species}{When \code{TRUE}, the \code{phyloseq} object and stored ASVs are agglomerated by species for network construction and calculation of diversity indices. If \code{FALSE}, the initial phyloseq object with separate ASVs is used.
   \item{tree.args}{List of the parameters fed into functions from the \code{phangorn} package and \code{stats::update()} for constructing phylogenetic trees for each sample. See \code{phangorn} for a list of available arguments.}
   \item{network}{A logical argument that determines if the co-occurrence network analysis is included.}
   \item{network.args}{List of the parameters fed into \code{make_network()} from the \code{phyloseq} package used in constructing the co-occurrence network for each sample. See \code{make_network()} for additional arguments available.}
@@ -30,8 +31,9 @@ Returns a \code{mga-class} object listing the following objects:
     \item{phylo_tree}{A list of the objects created and used in constructing the phylogeny (\code{phangAlign} of class 'phyDat', \code{dm} of class 'dist', \code{treeNJ} of class 'phylo', \code{fit} of class 'pml', \code{fitGTR} of class 'pml').}
     \item{sampledata}{A \code{phyloseq-class} list of the sample metadata provided.}
     \item{ps}{A \code{phyloseq-class} object holding the sequence table, taxonomy table, phylogenetic tree, and the sample metadata in the form of its component data classes: \code{otu_table-class}, \code{taxonomyTable-class}, \code{phylo-class}, \code{sample_data-class}. Storing these objects in a \code{phyloseq-class} object facilitates handling of the data in downstream analyses.}
+    \item{ps.species}{The \code{phyloseq-class} object agglomerated by species. If `group.species = TRUE`.}
     \item{net}{An \code{igraph} object for the co-occurrence network constructed. If `network = TRUE`.}
-    \item{results.samples}{A 'data.frame' of sample metadata and the computed community diversity and network topology metrics for each sample: Shannon's diversity, Simpson's diversity, richness (rich), phylogenetic diversity (PD), total sequence count (n.indivs), OTU/ASV count (ASVs), number of vertices (vertices) and edges (edges) in the network, network connectivity, and network connectance.}
+    \item{results.samples}{A 'data.frame' of sample metadata and the computed community diversity and network topology metrics for each sample: Shannon's diversity, Simpson's diversity, species count/richness (rich), phylogenetic diversity (PD), total sequence count (n.indivs), OTU/ASV count (ASVs), number of vertices (vertices) and edges (edges) in the network, network connectivity, and network connectance.}
     \item{degree.samp}{A 'data.frame' of the degrees of (number of edges connected to) each vertex in the network for each sample. If `network = TRUE`.}
 }
 %%\references{

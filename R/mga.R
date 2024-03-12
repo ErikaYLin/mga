@@ -299,6 +299,11 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
   ps_network$phylo_tree <- phylo_tree
   ps_network$sampledata <- sampledata
   ps_network$ps <- ps
+
+  if (group.species) {
+  ps_network$ps.species <- species
+  }
+
   ps_network$results.samples <- results.samples
 
   if (network) {
