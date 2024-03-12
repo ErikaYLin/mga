@@ -4,7 +4,8 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
                 filtFs, filtRs, # file paths for filtered and trimmed sequences
                 refFasta, # file path of reference FASTA for taxonomic classification
                 metadata = NULL, # sample metadata in list or data frame format
-                make.unique = TRUE,  # defines all unclassified taxa as being unique
+                make.unique = TRUE, # defines all unclassified taxa as being unique
+                group.species = TRUE, # agglomerates phyloseq taxa by species for computed metrics
                 tree.args = list(k = 4,
                                  inv = 0.2,
                                  model = "GTR", # "JC", "F81", "SYM", "GTR", etc. **SEE phangorn::optim.pml FOR ALL MODELS**
@@ -151,7 +152,8 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
   # Phylogenetic tree construction follows the workflow by Callahan et al. (2017).
   # https://bioconductor.org/help/course-materials/2017/BioC2017/Day1/Workshops/Microbiome/MicrobiomeWorkflowII.html
   seqs <- dada2::getSequences(ASVtab)
-  names(seqs) <- seqs # This propagates to the tip labels of the tree
+  # names(seqs) <- seqs # This propagates to the tip labels of the tree # try replacing with: paste(taxTab$Genus, taxTab$Species, sep = "_")
+  names(seqs) <- paste(taxTab$Genus, taxTab$Species, sep = "_")
   alignment <- DECIPHER::AlignSeqs(Biostrings::DNAStringSet(seqs), anchor=NA, verbose=FALSE)
 
   if (verbose) {message("Fitting the phylogenetic tree.")}
@@ -200,12 +202,15 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
                            tax,
                            phyloseq::phy_tree(fitGTR$tree))
 
+  # Aggregate duplicate species
+  species <- phyloseq::tax_glom(ps, taxrank = 'Species', NArm = FALSE)
+
   if (network) {
 
     if (verbose) {message("Building the network from the phyloseq object.")}
 
     # Construct the network using `ps`
-    net <- phyloseq::make_network(ps,
+    net <- phyloseq::make_network(if (group.species){species} else{ps},
                                   type = network.args$type,
                                   distance = network.args$distance,
                                   max.dist = network.args$max.dist,
@@ -229,9 +234,6 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
 
   if (verbose) {message("Calculating diversity measures for each sample.")}
 
-  # Aggregate duplicate species
-  species <- phyloseq::tax_glom(ps, taxrank = 'Species', NArm = FALSE)
-
   # Sum the presences in each sample for species richness
   rich <- nrow(phyloseq::tax_table(species)) # species count in sample
   # total individuals from all species in each sample
@@ -240,13 +242,13 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
 
   # Alpha species diversity measures
   # Shannon index
-  ps_alpha_div <- phyloseq::estimate_richness(species, split = TRUE, measure = "Shannon")
+  ps_alpha_div <- phyloseq::estimate_richness(if (group.species){species} else{ps}, split = TRUE, measure = "Shannon")
   # Simpson index
-  ps_alpha_div2 <- phyloseq::estimate_richness(species, split = TRUE, measure = "Simpson")
+  ps_alpha_div2 <- phyloseq::estimate_richness(if (group.species){species} else{ps}, split = TRUE, measure = "Simpson")
 
   # Phylogenetic diversity
   # Sum all branch lengths in the phylogenetic tree
-  PD <- sum(phyloseq::tree_layout(phyloseq::phy_tree(species))$edgeDT[["edge.length"]])
+  PD <- sum(phyloseq::tree_layout(phyloseq::phy_tree(if (group.species){species} else{ps}))$edgeDT[["edge.length"]])
 
   if (network) {
 
