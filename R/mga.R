@@ -74,15 +74,23 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
   # Remove the prefix from taxa names
   # Removal of prefixes follow the workflow by Hui (2021).
   # https://www.yanh.org/2021/01/01/microbiome-r/#build-phyloseq-project
-  taxTab <- data.frame(row.names = row.names(taxTab),
-                       Kingdom = stringr::str_replace(taxTab[,1], "k__",""),
-                       Phylum = stringr::str_replace(taxTab[,2], "p__",""),
-                       Class = stringr::str_replace(taxTab[,3], "c__",""),
-                       Order = stringr::str_replace(taxTab[,4], "o__",""),
-                       Family = stringr::str_replace(taxTab[,5], "f__",""),
-                       Genus = stringr::str_replace(taxTab[,6], "g__",""),
-                       if (ncol(taxTab) == 7) {
-                       Species = stringr::str_replace(taxTab[,7], "s__","")})
+  if (ncol(taxTab) == 7) {
+    taxTab <- data.frame(row.names = row.names(taxTab),
+                         Kingdom = stringr::str_replace(taxTab[,1], "k__",""),
+                         Phylum = stringr::str_replace(taxTab[,2], "p__",""),
+                         Class = stringr::str_replace(taxTab[,3], "c__",""),
+                         Order = stringr::str_replace(taxTab[,4], "o__",""),
+                         Family = stringr::str_replace(taxTab[,5], "f__",""),
+                         Genus = stringr::str_replace(taxTab[,6], "g__",""),
+                         Species = stringr::str_replace(taxTab[,7], "s__",""))
+  } else if(ncol(taxTab) == 6) {
+    taxTab <- data.frame(row.names = row.names(taxTab),
+                         Kingdom = stringr::str_replace(taxTab[,1], "k__",""),
+                         Phylum = stringr::str_replace(taxTab[,2], "p__",""),
+                         Class = stringr::str_replace(taxTab[,3], "c__",""),
+                         Order = stringr::str_replace(taxTab[,4], "o__",""),
+                         Family = stringr::str_replace(taxTab[,5], "f__",""),
+                         Genus = stringr::str_replace(taxTab[,6], "g__",""))
 
   # Rename "NA" elements to "Unclassified __"
   if (ncol(taxTab) == 7) {
