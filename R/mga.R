@@ -65,7 +65,7 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
   if (verbose) {message("Taxonomic classification based on chosen reference FASTA.")}
 
   # Assign taxonomy to the ASVs based on chosen reference FASTA and build a taxonomy table
-  taxTab2 <- dada2::assignTaxonomy(ASVtab,
+  taxTab <- dada2::assignTaxonomy(ASVtab,
                                    refFasta = refFasta,
                                    multithread = multithread)
 
@@ -74,18 +74,19 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
   # Remove the prefix from taxa names
   # Removal of prefixes follow the workflow by Hui (2021).
   # https://www.yanh.org/2021/01/01/microbiome-r/#build-phyloseq-project
-  taxTab <- data.frame(row.names = row.names(taxTab2),
-                       Kingdom = stringr::str_replace(taxTab2[,1], "k__",""),
-                       Phylum = stringr::str_replace(taxTab2[,2], "p__",""),
-                       Class = stringr::str_replace(taxTab2[,3], "c__",""),
-                       Order = stringr::str_replace(taxTab2[,4], "o__",""),
-                       Family = stringr::str_replace(taxTab2[,5], "f__",""),
-                       Genus = stringr::str_replace(taxTab2[,6], "g__",""),
-                       if (ncol(taxTab2) == 7) {
-                       Species = stringr::str_replace(taxTab2[,7], "s__","")})
+  taxTab <- data.frame(row.names = row.names(taxTab),
+                       Kingdom = stringr::str_replace(taxTab[,1], "k__",""),
+                       Phylum = stringr::str_replace(taxTab[,2], "p__",""),
+                       Class = stringr::str_replace(taxTab[,3], "c__",""),
+                       Order = stringr::str_replace(taxTab[,4], "o__",""),
+                       Family = stringr::str_replace(taxTab[,5], "f__",""),
+                       Genus = stringr::str_replace(taxTab[,6], "g__",""),
+                       if (ncol(taxTab) == 7) {
+                       Species = stringr::str_replace(taxTab[,7], "s__","")
+                       } else {Species = paste(taxTab$Genus, "sp", sep = "_")})
 
   # Rename "NA" elements to "Unclassified __"
-  if (ncol(taxTab) == 7) {
+  # if (ncol(taxTab) == 7) {
     for (i in 1:nrow(taxTab)) {
       if (is.na(taxTab[i, 2]) || taxTab[i, 2] == "") {
         kingdom <- paste("Unclassified", taxTab[i, 1], sep = "_")
@@ -106,31 +107,31 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
         taxTab$Species[i] <- paste("Unclassified", taxTab$Genus[i], sep = "_")
       }
     }
-  } else if (ncol(taxTab) == 6) {
-    for (i in 1:nrow(taxTab)) {
-      if (is.na(taxTab[i, 2]) || taxTab[i, 2] == "") {
-        kingdom <- paste("Unclassified", taxTab[i, 1], sep = "_")
-        taxTab[i, 2:6] <- kingdom
-      } else if (is.na(taxTab[i, 3]) || taxTab[i, 3] == "") {
-        phylum <- paste("Unclassified", taxTab[i, 2], sep = "_")
-        taxTab[i, 3:6] <- phylum
-      } else if (is.na(taxTab[i, 4]) || taxTab[i, 4] == "") {
-        class <- paste("Unclassified", taxTab[i, 3], sep = "_")
-        taxTab[i, 4:6] <- class
-      } else if (is.na(taxTab[i, 5]) || taxTab[i, 5] == "") {
-        order <- paste("Unclassified", taxTab[i, 4], sep = "_")
-        taxTab[i, 5:6] <- order
-      } else if (is.na(taxTab[i, 6]) || taxTab[i, 6] == "") {
-        family <- paste("Unclassified", taxTab[i, 5], sep = "_")
-        taxTab[i, 6:6] <- family
-      }
-    }
-  }
+  # } else if (ncol(taxTab) == 6) {
+  #   for (i in 1:nrow(taxTab)) {
+  #     if (is.na(taxTab[i, 2]) || taxTab[i, 2] == "") {
+  #       kingdom <- paste("Unclassified", taxTab[i, 1], sep = "_")
+  #       taxTab[i, 2:6] <- kingdom
+  #     } else if (is.na(taxTab[i, 3]) || taxTab[i, 3] == "") {
+  #       phylum <- paste("Unclassified", taxTab[i, 2], sep = "_")
+  #       taxTab[i, 3:6] <- phylum
+  #     } else if (is.na(taxTab[i, 4]) || taxTab[i, 4] == "") {
+  #       class <- paste("Unclassified", taxTab[i, 3], sep = "_")
+  #       taxTab[i, 4:6] <- class
+  #     } else if (is.na(taxTab[i, 5]) || taxTab[i, 5] == "") {
+  #       order <- paste("Unclassified", taxTab[i, 4], sep = "_")
+  #       taxTab[i, 5:6] <- order
+  #     } else if (is.na(taxTab[i, 6]) || taxTab[i, 6] == "") {
+  #       family <- paste("Unclassified", taxTab[i, 5], sep = "_")
+  #       taxTab[i, 6:6] <- family
+  #     }
+  #   }
+  # }
 
   # Add species column if missing
-  if (ncol(taxTab) == 6) {
-    taxTab$Species = paste(taxTab$Genus, "sp", sep = "_")
-  }
+  # if (ncol(taxTab) == 6) {
+  #   taxTab$Species = paste(taxTab$Genus, "sp", sep = "_")
+  # }
 
   # Number replicates of unclassified taxa
   if (make.unique){
