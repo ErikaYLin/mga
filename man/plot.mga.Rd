@@ -7,13 +7,13 @@
 Produces plots of \code{mga} objects (phylogenetic tree and co-occurrence network) using \code{\link[phyloseq]{phyloseq}} plotting methods.
 }
 \usage{
-\S3method{plot}{mga}(mga, type = "tree", ...)
+\S3method{plot}{mga}(mga, type = "tree", group.species = TRUE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{mga}{A \code{mga} object built using \code{\link{mga}}.}
   \item{type}{The type of plot to draw. Possible types are: \code{"tree"} for a phylogenetic tree pulled from \code{\link[phyloseq]{phy_tree}}, \code{"network"} for a co-occurrence network pulled from \code{\link[phyloseq]{make_network}} and plotted with \code{\link[phyloseq]{plot_network}}.}
-
+  \item{group.species}{When \code{TRUE}, the \code{phyloseq} object agglomerated by species is used to plot the phylogenetic tree. If \code{FALSE}, the initial phyloseq object with separate ASVs is used. See the `group.species` argument and `ps` and `ps.species` values from \code{\link{mga}} for details.}
   \item{...}{Additional plotting arguments and graphing parameters.}
 
 }

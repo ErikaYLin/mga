@@ -3,13 +3,14 @@
 
 plot.mga <- function(mga,
                      type = "tree", # "tree", "network", and eventually "errors"
+                     group.species = TRUE, # uses mga$ps.species over mga$ps for tree
                      ...) {
-  
+
   # Plot phylogenetic tree
   if (type == "tree") {
-  plot(phyloseq::phy_tree(mga$ps), ...)
+  plot(phyloseq::phy_tree(if (group.species){mga$ps.species} else{mga$ps}), ...)
   } else
-  
+
   # Plot co-occurrence network
   if (type == "network")  {
     if ("net" %in% names(mga)) {
