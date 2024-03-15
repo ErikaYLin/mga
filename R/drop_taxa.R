@@ -399,9 +399,12 @@ drop_taxa <- function(mga, # mga-class object
     results.samples <- cbind(results.samples, sampledata)
     # results.samples <- dplyr::relocate(sample.ID, .before = Shannon) # move Sample.ID column to leftmost
 
-    degree.samp <- data.frame(if (group.species){otu_table(ps.species)[1,]} else{phyloseq::otu_table(mga$ps)[1,]}, degrees,
-                              if (group.species){row.names = colnames(otu_table(ps.species))} else{row.names = colnames(phyloseq::otu_table(mga$ps))})
-    colnames(degree.samp)[1] <- sampledata$sample.ID
+    if (group.species) {
+      degree.samp <- data.frame(phyloseq::otu_table(ps.species)[1,], degrees, row.names = colnames(phyloseq::otu_table(ps.species)))
+      colnames(degree.samp)[1] <- sampledata$sample.ID
+    } else {
+      degree.samp <- data.frame(phyloseq::otu_table(mga$ps), degrees, row.names = colnames(phyloseq::otu_table(mga$ps)))
+      colnames(degree.samp)[1] <- sampledata$sample.ID}
 
   } else if (network == FALSE) {
 
