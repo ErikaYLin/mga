@@ -6,11 +6,12 @@
 Filters \code{mga-class} objects produced by \code{\link{mga}} for select taxa that are specified in a table with columns for the taxa names and taxonomic level at which to search.
 }
 \usage{
-drop_taxa(mga, taxa = NULL, network = TRUE, network.args = list(type = "taxa", distance = "jaccard", max.dist = 0.45, keep.isolates = TRUE))
+drop_taxa(mga, taxa = NULL, group.species = TRUE, network = TRUE, network.args = list(type = "taxa", distance = "jaccard", max.dist = 0.45, keep.isolates = TRUE))
 }
 \arguments{
   \item{mga}{A \code{mga-class} object produced by \code{\link{mga}}.}
   \item{taxa}{A table of taxa to filter for. The table must have two columns: "taxon" containing the names of taxa to keep, and "group" with the taxonomic level of each taxon listed (i.e. "Class", "Family", "Species", etc.).}
+  \item{group.species}{When \code{TRUE}, the \code{phyloseq} object and stored ASVs are agglomerated by species for network construction and calculation of diversity indices. If \code{FALSE}, the initial phyloseq object with separate ASVs is used. See \code{\link[phyloseq]{tax_glom}} for details.}
   \item{network}{A logical argument that determines if the co-occurrence network analysis is included.}
   \item{network.args}{List of the parameters fed into \code{\link[phyloseq]{make_network}} from the \code{phyloseq} package used in constructing the co-occurrence network for each sample. See \code{\link[phyloseq]{make_network}} for additional arguments available.}
 

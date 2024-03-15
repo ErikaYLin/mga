@@ -240,6 +240,7 @@
 
 drop_taxa <- function(mga, # mga-class object
                       taxa = NULL, # .csv object listing taxa to search for with columns named "taxon" and "group"
+                      group.species = TRUE,
                       network = TRUE,
                       network.args = list(type = "taxa", # "samples"
                                           distance = "jaccard", # "jaccard", "unifrac", "wunifrac", DPCoA", "jsd"
@@ -335,10 +336,17 @@ drop_taxa <- function(mga, # mga-class object
   # Filter taxa from ASV table
   mga$ps <- phyloseq::prune_taxa(keep.names, mga$ps)
 
+  # Aggregate duplicate species
+  ps.species <- phyloseq::tax_glom(mga$ps, taxrank = 'Species', NArm = FALSE)
+
+  if (group.species) {
+  mga$ps.species <- ps.species
+  }
+
   if (network) {
 
     # Construct the network using `prune.ps`
-    net <- phyloseq::make_network(mga$ps,
+    net <- phyloseq::make_network(if (group.species){ps.species} else{mga$ps},
                                   type = network.args$type,
                                   distance = network.args$distance,
                                   max.dist = network.args$max.dist,
@@ -358,24 +366,21 @@ drop_taxa <- function(mga, # mga-class object
     sampledata <- as.data.frame(phyloseq::sample_data(mga$ps)) # subset sample_info as a data frame
   }
 
-  # Aggregate duplicate species
-  species <- phyloseq::tax_glom(mga$ps, taxrank = 'Species', NArm = FALSE)
-
   # Sum the presences in each sample for species richness
-  rich <- nrow(phyloseq::tax_table(species)) # species count in sample
+  rich <- nrow(phyloseq::tax_table(ps.species)) # species count in sample
   # total individuals from all species in each sample
   n <- apply(phyloseq::otu_table(mga$ps), 1, function(x) sum(x))
   ASVs <- ncol(phyloseq::otu_table(mga$ps)) # total number of ASVs in site
 
   # Alpha species diversity measures
   # Shannon index
-  ps_alpha_div <- phyloseq::estimate_richness(mga$ps, split = TRUE, measure = "Shannon")
+  ps_alpha_div <- phyloseq::estimate_richness(if (group.species){ps.species} else{mga$ps}, split = TRUE, measure = "Shannon")
   # Simpson index
-  ps_alpha_div2 <- phyloseq::estimate_richness(mga$ps, split = TRUE, measure = "Simpson")
+  ps_alpha_div2 <- phyloseq::estimate_richness(if (group.species){ps.species} else{mga$ps}, split = TRUE, measure = "Simpson")
 
   # Phylogenetic diversity
   # Sum all branch lengths in the phylogenetic tree
-  PD <- sum(phyloseq::tree_layout(phyloseq::phy_tree(mga$ps))$edgeDT[["edge.length"]])
+  PD <- sum(phyloseq::tree_layout(phyloseq::phy_tree(if (group.species){ps.species} else{mga$ps}))$edgeDT[["edge.length"]])
 
   if (network) {
 
@@ -394,7 +399,8 @@ drop_taxa <- function(mga, # mga-class object
     results.samples <- cbind(results.samples, sampledata)
     # results.samples <- dplyr::relocate(sample.ID, .before = Shannon) # move Sample.ID column to leftmost
 
-    degree.samp <- data.frame(phyloseq::otu_table(mga$ps)[1,], degrees, row.names = colnames(phyloseq::otu_table(mga$ps)))
+    degree.samp <- data.frame(if (group.species){otu_table(ps.species)[1,]} else{phyloseq::otu_table(mga$ps)[1,]}, degrees,
+                              if (group.species){row.names = colnames(otu_table(ps.species))} else{row.names = colnames(phyloseq::otu_table(mga$ps))})
     colnames(degree.samp)[1] <- sampledata$sample.ID
 
   } else if (network == FALSE) {
