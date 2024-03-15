@@ -277,7 +277,6 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
                                   connectance)
 
     results.samples <- cbind(results.samples, sample_info)
-    # results.samples <- dplyr::relocate(sample.ID, .before = Shannon) # move Sample.ID column to leftmost
 
     if (group.species) {
       degree.samp <- as.data.frame(t(phyloseq::otu_table(species)))
@@ -299,7 +298,6 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
                                   ASVs)
 
     results.samples <- cbind(results.samples, sample_info)
-    # results.samples <- dplyr::relocate(sample.ID, .before = Shannon) # move Sample.ID column to leftmost
 
   }
 

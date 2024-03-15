@@ -159,7 +159,6 @@ drop_taxa <- function(mga, # mga-class object
                                   connectance)
 
     results.samples <- cbind(results.samples, sampledata)
-    # results.samples <- dplyr::relocate(sample.ID, .before = Shannon) # move Sample.ID column to leftmost
 
     if (group.species) {
       degree.samp <- as.data.frame(t(phyloseq::otu_table(ps.species)))
@@ -179,7 +178,6 @@ drop_taxa <- function(mga, # mga-class object
                                   ASVs)
 
     results.samples <- cbind(results.samples, sampledata)
-    # results.samples <- dplyr::relocate(sample.ID, .before = Shannon) # move Sample.ID column to leftmost
 
   }
 
