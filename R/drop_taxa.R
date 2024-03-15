@@ -263,14 +263,14 @@ drop_taxa <- function(mga, # mga-class object
   # Search for taxa in taxonomy table
   for (j in 1:nrow(taxa)) {
     # Search in Kingdom
-    if ("Kingdom" | "kingdom" %in% taxa$group[j]){
+    if ("Kingdom" %in% taxa$group[j]){
       for (i in 1:nrow(taxTab)) {
         if (taxa$taxon[j] %in% taxTab$Kingdom[i]){
           taxTab$keep[i] = 1
           taxTab$keep_taxon[i] = taxa$taxon[j]
         }}
       # Search in Phylum
-    } else if ("Phylum" | "phylum" %in% taxa$group[j]){
+    } else if ("Phylum" %in% taxa$group[j]){
       for (i in 1:nrow(taxTab)) {
         if (taxa$taxon[j] %in% taxTab$Phylum[i]){
           taxTab$keep[i] = 1
@@ -278,7 +278,7 @@ drop_taxa <- function(mga, # mga-class object
             taxTab$keep_taxon[i] = taxa$taxon[j]
           }}}
       # Search in Class
-    } else if ("Class" | "class" %in% taxa$group[j]){
+    } else if ("Class" %in% taxa$group[j]){
       for (i in 1:nrow(taxTab)) {
         if (taxa$taxon[j] %in% taxTab$Class[i]){
           taxTab$keep[i] = 1
@@ -286,7 +286,7 @@ drop_taxa <- function(mga, # mga-class object
             taxTab$keep_taxon[i] = taxa$taxon[j]
           }}}
       # Search in Order
-    } else if ("Order" | "order" %in% taxa$group[j]){
+    } else if ("Order" %in% taxa$group[j]){
       for (i in 1:nrow(taxTab)) {
         if (taxa$taxon[j] %in% taxTab$Order[i]){
           taxTab$keep[i] = 1
@@ -294,7 +294,7 @@ drop_taxa <- function(mga, # mga-class object
             taxTab$keep_taxon[i] = taxa$taxon[j]
           }}}
       # Search in Family
-    } else if ("Family" | "family" %in% taxa$group[j]){
+    } else if ("Family" %in% taxa$group[j]){
       for (i in 1:nrow(taxTab)) {
         if (taxa$taxon[j] %in% taxTab$Family[i]){
           taxTab$keep[i] = 1
@@ -302,7 +302,7 @@ drop_taxa <- function(mga, # mga-class object
             taxTab$keep_taxon[i] = taxa$taxon[j]
           }}}
       # Search in Genus
-    } else if ("Genus" | "genus" %in% taxa$group[j]){
+    } else if ("Genus" %in% taxa$group[j]){
       for (i in 1:nrow(taxTab)) {
         if (taxa$taxon[j] %in% taxTab$Genus[i]){
           taxTab$keep[i] = 1
@@ -310,7 +310,7 @@ drop_taxa <- function(mga, # mga-class object
             taxTab$keep_taxon[i] = taxa$taxon[j]
           }}}
       # Search in Species
-    } else if ("Species" | "species" %in% taxa$group[j]){
+    } else if ("Species" %in% taxa$group[j]){
       for (i in 1:nrow(taxTab)) {
         if (taxa$taxon[j] %in% taxTab$Species[i]){
           taxTab$keep[i] = 1
