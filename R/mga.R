@@ -280,11 +280,11 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
     # results.samples <- dplyr::relocate(sample.ID, .before = Shannon) # move Sample.ID column to leftmost
 
     if (group.species) {
-      degree.samp <- data.frame(phyloseq::otu_table(species)[1,], degrees, row.names = colnames(phyloseq::otu_table(species)))
-      colnames(degree.samp)[1] <- sampledata$sample.ID
+      degree.samp <- as.data.frame(t(phyloseq::otu_table(species)))
+      degree.samp$degrees <- degrees
     } else {
-      degree.samp <- data.frame(ASVtab[1,], degrees, row.names = colnames(ASVtab))
-      colnames(degree.samp)[1] <- sampledata$sample.ID}
+      degree.samp <- as.data.frame(t(ASVtab))
+      degree.samp$degrees <- degrees}
 
   } else if (network == FALSE) {
 
