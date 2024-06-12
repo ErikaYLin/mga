@@ -96,7 +96,10 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
   # Rename "NA" elements to "Unclassified __"
   if (ncol(taxTab) == 7) {
     for (i in 1:nrow(taxTab)) {
-      if (is.na(taxTab[i, 2]) || taxTab[i, 2] == "") {
+      if (is.na(taxTab$Kingdom[i])){
+        domain <- paste("Unclassified")
+        taxTab[i, 1:7] <- domain
+      } else if (is.na(taxTab[i, 2]) || taxTab[i, 2] == "") {
         kingdom <- paste("Unclassified", taxTab[i, 1], sep = "_")
         taxTab[i, 2:7] <- kingdom
       } else if (is.na(taxTab[i, 3]) || taxTab[i, 3] == "") {
@@ -117,7 +120,10 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
     }
   } else if (ncol(taxTab) == 6) {
     for (i in 1:nrow(taxTab)) {
-      if (is.na(taxTab[i, 2]) || taxTab[i, 2] == "") {
+      if (is.na(taxTab$Kingdom[i])){
+        domain <- paste("Unclassified")
+        taxTab[i, 1:7] <- domain
+      } else if (is.na(taxTab[i, 2]) || taxTab[i, 2] == "") {
         kingdom <- paste("Unclassified", taxTab[i, 1], sep = "_")
         taxTab[i, 2:6] <- kingdom
       } else if (is.na(taxTab[i, 3]) || taxTab[i, 3] == "") {
@@ -163,7 +169,6 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
   # https://bioconductor.org/help/course-materials/2017/BioC2017/Day1/Workshops/Microbiome/MicrobiomeWorkflowII.html
   seqs <- dada2::getSequences(ASVtab)
   names(seqs) <- seqs # This propagates to the tip labels of the tree
-  # names(seqs) <- paste(taxTab$Genus, taxTab$Species, sep = "_")
   alignment <- DECIPHER::AlignSeqs(Biostrings::DNAStringSet(seqs), anchor=NA, verbose=FALSE)
 
   if (verbose) {message("Fitting the phylogenetic tree.")}
