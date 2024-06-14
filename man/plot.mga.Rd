@@ -17,19 +17,16 @@ Produces plots of \code{mga} objects (phylogenetic tree and co-occurrence networ
   \item{...}{Additional plotting arguments and graphing parameters.}
 
 }
-}
+
 \details{
 \code{type = "network"} is only possible if \code{network = "TRUE"} when using \code{\link{mga}} to buld the plotting input.
 }
 
 %% \references{
 %% ~put references to the literature/web site here ~
-}
+%%}
 \author{Erika Y. Lin
-%% }
-%% \note{
-%%  ~~further notes~~
-%% }
+}
 
 \note{
   See also \code{\link{mga}} for details on \code{mga-class} objects, \code{\link[phyloseq]{phy_tree}} for phylogenetic tree construction, \code{\link[ape]{plot.phylo}} for additional phylogenetic tree plotting parameters, and \code{\link[phyloseq]{make_network}} and \code{\link[phyloseq]{plot_network}} for details on making and plotting \code{igraph} objects through \code{phyloseq}.
