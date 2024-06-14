@@ -429,13 +429,13 @@ filter_taxa <- function(mga, # mga-class object
   } else if (keep == FALSE & drop == TRUE) {
     return(mga_drop)
   } else if (keep & drop) {
-    return(list(mga_keep, mga_drop))
+    return(list(mga_keep = mga_keep, mga_drop = mga_drop))
   }
 
   } else { # Did NOT identify any selected taxa
 
-    warning("No taxa selected were identified in the mga object. Please check if taxa are present in the taxonomy table.")
-    return(mga)
+    warning("No taxa selected for filtering were identified in the mga object. Please check if taxa are present in the taxonomy table.")
+    return(mga = mga)
   }
 }
 
