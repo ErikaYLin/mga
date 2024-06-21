@@ -5,7 +5,7 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
                 refFasta, # file path of reference FASTA for taxonomic classification
                 metadata = NULL, # sample metadata in list or data frame format
                 make.unique = TRUE, # defines all unclassified taxa as being unique
-                group.species = TRUE, # agglomerates phyloseq taxa by species for computed metrics
+                group.taxa = "Species", # agglomerates phyloseq by taxa specified for computed metrics
                 tree.args = list(k = 4,
                                  inv = 0.2,
                                  model = "GTR", # "JC", "F81", "SYM", "GTR", etc. **SEE phangorn::optim.pml FOR ALL MODELS**
@@ -218,14 +218,15 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
                            phyloseq::phy_tree(fitGTR$tree))
 
   # Aggregate duplicate species
-  species <- phyloseq::tax_glom(ps, taxrank = 'Species', NArm = FALSE)
+  if (!is.null(group.taxa)){
+  species <- phyloseq::tax_glom(ps, taxrank = group.taxa, NArm = FALSE)}
 
   if (network) {
 
     if (verbose) {message("Building the network from the phyloseq object.")}
 
     # Construct the network using `ps`
-    net <- phyloseq::make_network(if (group.species){species} else{ps},
+    net <- phyloseq::make_network(if (!is.null(group.taxa)){species} else{ps},
                                   type = network.args$type,
                                   distance = network.args$distance,
                                   max.dist = network.args$max.dist,
@@ -251,19 +252,19 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
 
   # Sum the presences in each sample for species richness
   rich <- nrow(phyloseq::tax_table(species)) # species count in sample
-  # total individuals from all species in each sample
+  # total read count from all ASVs in each sample
   n <- apply(ASVtab, 1, function(x) sum(x))
   ASVs <- ncol(ASVtab) # total number of ASVs in site
 
   # Alpha species diversity measures
   # Shannon index
-  ps_alpha_div <- phyloseq::estimate_richness(if (group.species){species} else{ps}, split = TRUE, measure = "Shannon")
+  ps_alpha_div <- phyloseq::estimate_richness(if (!is.null(group.taxa)){species} else{ps}, split = TRUE, measure = "Shannon")
   # Simpson index
-  ps_alpha_div2 <- phyloseq::estimate_richness(if (group.species){species} else{ps}, split = TRUE, measure = "Simpson")
+  ps_alpha_div2 <- phyloseq::estimate_richness(if (!is.null(group.taxa)){species} else{ps}, split = TRUE, measure = "Simpson")
 
   # Phylogenetic diversity
   # Sum all branch lengths in the phylogenetic tree
-  PD <- sum(phyloseq::tree_layout(phyloseq::phy_tree(if (group.species){species} else{ps}))$edgeDT[["edge.length"]])
+  PD <- sum(phyloseq::tree_layout(phyloseq::phy_tree(if (!is.null(group.taxa)){species} else{ps}))$edgeDT[["edge.length"]])
 
   if (network) {
 
@@ -274,7 +275,7 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
                                   ps_alpha_div2,
                                   rich,
                                   PD,
-                                  n.indivs = n,
+                                  reads = n,
                                   ASVs,
                                   vertices = v,
                                   edges = e,
@@ -283,7 +284,7 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
 
     results.samples <- cbind(results.samples, sample_info)
 
-    if (group.species) {
+    if (!is.null(group.taxa)) {
       degree.samp <- as.data.frame(t(phyloseq::otu_table(species)))
       degree.samp$degrees <- degrees
     } else {
@@ -299,7 +300,7 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
                                   ps_alpha_div2,
                                   rich,
                                   PD,
-                                  n.indivs = n,
+                                  reads = n,
                                   ASVs)
 
     results.samples <- cbind(results.samples, sample_info)
@@ -317,8 +318,8 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
   ps_network$sampledata <- sampledata
   ps_network$ps <- ps
 
-  if (group.species) {
-  ps_network$ps.species <- species
+  if (!is.null(group.taxa)) {
+  ps_network$ps.taxa <- species
   }
 
   ps_network$results.samples <- results.samples
