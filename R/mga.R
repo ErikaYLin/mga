@@ -217,9 +217,12 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
                            tax,
                            phyloseq::phy_tree(fitGTR$tree))
 
-  # Aggregate duplicate species
+  # Aggregate by taxonomic level
   if (!is.null(group.taxa)){
-  species <- phyloseq::tax_glom(ps, taxrank = group.taxa, NArm = FALSE)}
+    species <- phyloseq::tax_glom(ps, taxrank = group.taxa, NArm = FALSE)
+  } else {
+    species <- phyloseq::tax_glom(ps, taxrank = 'Species', NArm = FALSE)
+  }
 
   if (network) {
 
@@ -250,8 +253,8 @@ mga <- function(fastq.Fs, fastq.Rs, # file paths for forward and reverse raw fas
 
   if (verbose) {message("Calculating diversity measures for each sample.")}
 
-  # Sum the presences in each sample for species richness
-  rich <- nrow(phyloseq::tax_table(species)) # species count in sample
+  # Sum the presences in each sample for richness at chosen taxonomic level
+  rich <- nrow(phyloseq::tax_table(species)) # taxa count in sample
   # total read count from all ASVs in each sample
   n <- apply(ASVtab, 1, function(x) sum(x))
   ASVs <- ncol(ASVtab) # total number of ASVs in site

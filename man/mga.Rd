@@ -23,7 +23,7 @@ Simple microbiome analysis by processing filtered genetic sequencing data to pro
 
 }
 \value{
-Returns a \code{mga-class} object listing the following objects:
+Returns a \code{mga-class} object listing the following items:
     \item{seqtabAll}{A table containing the sequences inferred from each sample using the \code{dada2} package.}
     \item{ASVtab}{A table containing the OTU/ASV sequences in \code{seqtabAll} with chimeras removed.}
     \item{taxTab}{An object of class 'data.frame' with the full taxonomic classification assigned to each sequence.}
@@ -31,8 +31,8 @@ Returns a \code{mga-class} object listing the following objects:
     \item{sampledata}{A \code{phyloseq-class} list of the sample metadata provided.}
     \item{ps}{A \code{phyloseq-class} object holding the sequence table, taxonomy table, phylogenetic tree, and the sample metadata in the form of its component data classes: \code{otu_table-class}, \code{taxonomyTable-class}, \code{phylo-class}, \code{sample_data-class}. Storing these objects in a \code{phyloseq-class} object facilitates handling of the data in downstream analyses.}
     \item{ps.taxa}{The \code{phyloseq-class} object agglomerated by the selected taxonomic level. Only returned if a taxonomic level is specified for the `group.taxa` argument.}
-    \item{net}{An \code{igraph} object for the co-occurrence network constructed. If `network = TRUE`.}
-    \item{results.samples}{A 'data.frame' of sample metadata and the computed community diversity and network topology metrics for each sample: Shannon's diversity, Simpson's diversity, species count/richness (rich),  phylogenetic diversity (PD), total sequence read count (reads), OTU/ASV count (ASVs), number of vertices (vertices) and edges (edges) in the network, network connectivity, and network connectance. Phylogenetic diversity (PD) calculated by \code{mga} is equivalent to Faith's phylogenetic diversity, a frequently used term in similar applications, such as QIIME/QIIME2.}
+    \item{net}{An \code{igraph} object for the co-occurrence network constructed. If `network = TRUE`. `ps.taxa` is used for network construction if `group.taxa` is specified.}
+    \item{results.samples}{A 'data.frame' of sample metadata and the computed community diversity and network topology metrics for each sample: Shannon's diversity, Simpson's diversity, count/richness of taxa grouped at the level specified by `group.taxa` (rich),  phylogenetic diversity (PD), total sequence read count (reads), OTU/ASV count (ASVs), number of vertices (vertices) and edges (edges) in the network, network connectivity, and network connectance. If `group.taxa = NULL`, `rich` is equivalent to species count/richness. Phylogenetic diversity (PD) calculated by \code{mga} is equivalent to Faith's phylogenetic diversity, a frequently used term in similar applications, such as QIIME/QIIME2.}
     \item{degree.samp}{A 'data.frame' of the degrees of (number of edges connected to) each vertex in the network for each sample. If `network = TRUE`.}
 }
 \note{
