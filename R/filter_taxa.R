@@ -4,12 +4,21 @@ filter_taxa <- function(mga, # mga-class object
                         keep = TRUE, # keep only selected taxa in output
                         drop = TRUE, # drop only selected taxa in output
                         taxa = NULL, # .csv object listing taxa to search for with columns named "taxon" and "group"
-                        group.species = TRUE,
+                        group.taxa = "Species", # agglomerates phyloseq by taxa specified for computed metrics
                         network = TRUE,
                         network.args = list(type = "taxa", # "samples"
                                             distance = "jaccard", # "jaccard", "unifrac", "wunifrac", DPCoA", "jsd"
                                             max.dist = 0.45, # default distance set by `make_network` function from `phyloseq` package is 0.4
                                             keep.isolates = TRUE)) {
+
+  # Error if no taxa to filter provided
+  if (is.null(taxa)) {
+    stop("Missing 'taxa' argument. No taxa for filtering provided.")
+  }
+
+  # group.taxa level should be greater than the finest level at which taxa are to be filtered
+  warning("Taxonomic level chosen for 'group.taxa' should be equal to or broader than the finest level of taxa selected for filtering.
+          Ensure that 'group.taxa' >= smallest 'taxa'.")
 
   if (keep) {
     # New mga object for taxa kept
@@ -19,79 +28,160 @@ filter_taxa <- function(mga, # mga-class object
     mga_drop <- mga
   }
 
-  # Convert mga ps,species tax_table to a data frame
-  taxTab <- phyloseq::tax_table(mga$ps.species)
+  # Run if ps.taxa exists
+  if (!is.null(mga$ps.taxa)) {
+
+  # Convert mga ps.taxa tax_table to a data frame
+  taxTab <- phyloseq::tax_table(mga$ps.taxa)
   taxTab <- as.data.frame(taxTab)
 
   # Add genus to species name in Species column
   spec.names <- taxTab$Species
-  taxTab$Species <- paste(taxTab$Genus, taxTab$Species, sep = " ")
+  taxTab$Species <- paste(taxTab$Genus, taxTab$Species, sep = "_")
 
   # Add column to indicate taxa to keep (yes = 1, no = 0)
   taxTab$keep = 0
   taxTab$keep_taxon = NA
 
-  # Search for taxa in taxonomy table
-  for (j in 1:nrow(taxa)) {
-    # Search in Kingdom
-    if ("Kingdom" %in% taxa$group[j]){
+  if (is.vector(taxa) | is.character(taxa)) {
+
+    # Add column to indicate taxonomic level where taxa were identified
+    taxTab$level = NA
+
+    for (j in 1:length(taxa)) {
+      # Search for each taxon in each row from finest level up
       for (i in 1:nrow(taxTab)) {
-        if (taxa$taxon[j] %in% taxTab$Kingdom[i]){
+
+        # Search in Species
+        if (taxa[j] %in% taxTab$Species[i]) {
           taxTab$keep[i] = 1
-          taxTab$keep_taxon[i] = taxa$taxon[j]
-        }}
-      # Search in Phylum
-    } else if ("Phylum" %in% taxa$group[j]){
-      for (i in 1:nrow(taxTab)) {
-        if (taxa$taxon[j] %in% taxTab$Phylum[i]){
+
+          # Run only if taxa[j] NOT already found at a finer taxonomic level
+          if (is.na(taxTab$level)[i] | !any("Species" %in% taxTab$level[i])) {
+            taxTab$keep_taxon[i] = taxa[j]
+            taxTab$level[i] = "Species"
+          }
+          # Search in Genus
+        } else if (taxa[j] %in% taxTab$Genus[i]) {
           taxTab$keep[i] = 1
-          if (is.na(taxTab$keep_taxon[i])){
+
+          # Run only if taxa[j] NOT already found at a finer taxonomic level
+          if (is.na(taxTab$level)[i] | !any(c("Genus","Species") %in% taxTab$level[i])) {
+            taxTab$keep_taxon[i] = taxa[j]
+            taxTab$level[i] = "Genus"
+          }
+          # Search in Family
+        } else if (taxa[j] %in% taxTab$Family[i]) {
+          taxTab$keep[i] = 1
+
+          # Run only if taxa[j] NOT already found at a finer taxonomic level
+          if (is.na(taxTab$level)[i] | !any(c("Family","Genus","Species") %in% taxTab$level[i])) {
+            taxTab$keep_taxon[i] = taxa[j]
+            taxTab$level[i] = "Family"
+          }
+          # Search in Order
+        } else if (taxa[j] %in% taxTab$Order[i]) {
+          taxTab$keep[i] = 1
+
+          # Run only if taxa[j] NOT already found at a finer taxonomic level
+          if (is.na(taxTab$level)[i] | !any(c("Order","Family","Genus","Species") %in% taxTab$level[i])) {
+            taxTab$keep_taxon[i] = taxa[j]
+            taxTab$level[i] = "Order"
+          }
+          # Search in Class
+        } else if (taxa[j] %in% taxTab$Class[i]) {
+          taxTab$keep[i] = 1
+
+          # Run only if taxa[j] NOT already found at a finer taxonomic level
+          if (is.na(taxTab$level)[i] | !any(c("Class","Order","Family","Genus","Species") %in% taxTab$level[i])) {
+            taxTab$keep_taxon[i] = taxa[j]
+            taxTab$level[i] = "Class"
+          }
+          # Search in Phylum
+        } else if (taxa[j] %in% taxTab$Phylum[i]) {
+          taxTab$keep[i] = 1
+
+          # Run only if taxa[j] NOT already found at a finer taxonomic level
+          if (is.na(taxTab$level)[i] | !any(c("Phylum","Class","Order","Family","Genus","Species") %in% taxTab$level[i])) {
+            taxTab$keep_taxon[i] = taxa[j]
+            taxTab$level[i] = "Phylum"
+          }
+          # Search in Kingdom
+        } else if (taxa[j] %in% taxTab$Kingdom[i]) {
+          taxTab$keep[i] = 1
+
+          # Run only if taxa[j] NOT already found at a finer taxonomic level
+          if (is.na(taxTab$level)[i] | !any(c("Kingdom","Phylum","Class","Order","Family","Genus","Species") %in% taxTab$level[i])) {
+            taxTab$keep_taxon[i] = taxa[j]
+            taxTab$level[i] = "Kingdom"
+          }
+          # Otherwise leave blank
+        }
+      }
+    } # closes search for loop for vector input
+
+  } else if (is.data.frame(taxa) == TRUE) {
+
+    # Search for taxa in taxonomy table
+    for (j in 1:nrow(taxa)) {
+      # Search in Kingdom
+      if ("Kingdom" %in% taxa$group[j]){
+        for (i in 1:nrow(taxTab)) {
+          if (taxa$taxon[j] %in% taxTab$Kingdom[i]){
+            taxTab$keep[i] = 1
             taxTab$keep_taxon[i] = taxa$taxon[j]
-          }}}
-      # Search in Class
-    } else if ("Class" %in% taxa$group[j]){
-      for (i in 1:nrow(taxTab)) {
-        if (taxa$taxon[j] %in% taxTab$Class[i]){
-          taxTab$keep[i] = 1
-          if (is.na(taxTab$keep_taxon[i])){
-            taxTab$keep_taxon[i] = taxa$taxon[j]
-          }}}
-      # Search in Order
-    } else if ("Order" %in% taxa$group[j]){
-      for (i in 1:nrow(taxTab)) {
-        if (taxa$taxon[j] %in% taxTab$Order[i]){
-          taxTab$keep[i] = 1
-          if (is.na(taxTab$keep_taxon[i])){
-            taxTab$keep_taxon[i] = taxa$taxon[j]
-          }}}
-      # Search in Family
-    } else if ("Family" %in% taxa$group[j]){
-      for (i in 1:nrow(taxTab)) {
-        if (taxa$taxon[j] %in% taxTab$Family[i]){
-          taxTab$keep[i] = 1
-          if (is.na(taxTab$keep_taxon[i])){
-            taxTab$keep_taxon[i] = taxa$taxon[j]
-          }}}
-      # Search in Genus
-    } else if ("Genus" %in% taxa$group[j]){
-      for (i in 1:nrow(taxTab)) {
-        if (taxa$taxon[j] %in% taxTab$Genus[i]){
-          taxTab$keep[i] = 1
-          if (is.na(taxTab$keep_taxon[i])){
-            taxTab$keep_taxon[i] = taxa$taxon[j]
-          }}}
-      # Search in Species
-    } else if ("Species" %in% taxa$group[j]){
-      for (i in 1:nrow(taxTab)) {
-        if (taxa$taxon[j] %in% taxTab$Species[i]){
-          taxTab$keep[i] = 1
-          if (is.na(taxTab$keep_taxon[i])){
-            taxTab$keep_taxon[i] = taxa$taxon[j]
-          }}}
-    } else {
-      taxTab$keep[i] = 0
-      taxTab$keep_taxon[i] = NA}
-  }
+          }}
+        # Search in Phylum
+      } else if ("Phylum" %in% taxa$group[j]){
+        for (i in 1:nrow(taxTab)) {
+          if (taxa$taxon[j] %in% taxTab$Phylum[i]){
+            taxTab$keep[i] = 1
+            if (is.na(taxTab$keep_taxon[i])){
+              taxTab$keep_taxon[i] = taxa$taxon[j]
+            }}}
+        # Search in Class
+      } else if ("Class" %in% taxa$group[j]){
+        for (i in 1:nrow(taxTab)) {
+          if (taxa$taxon[j] %in% taxTab$Class[i]){
+            taxTab$keep[i] = 1
+            if (is.na(taxTab$keep_taxon[i])){
+              taxTab$keep_taxon[i] = taxa$taxon[j]
+            }}}
+        # Search in Order
+      } else if ("Order" %in% taxa$group[j]){
+        for (i in 1:nrow(taxTab)) {
+          if (taxa$taxon[j] %in% taxTab$Order[i]){
+            taxTab$keep[i] = 1
+            if (is.na(taxTab$keep_taxon[i])){
+              taxTab$keep_taxon[i] = taxa$taxon[j]
+            }}}
+        # Search in Family
+      } else if ("Family" %in% taxa$group[j]){
+        for (i in 1:nrow(taxTab)) {
+          if (taxa$taxon[j] %in% taxTab$Family[i]){
+            taxTab$keep[i] = 1
+            if (is.na(taxTab$keep_taxon[i])){
+              taxTab$keep_taxon[i] = taxa$taxon[j]
+            }}}
+        # Search in Genus
+      } else if ("Genus" %in% taxa$group[j]){
+        for (i in 1:nrow(taxTab)) {
+          if (taxa$taxon[j] %in% taxTab$Genus[i]){
+            taxTab$keep[i] = 1
+            if (is.na(taxTab$keep_taxon[i])){
+              taxTab$keep_taxon[i] = taxa$taxon[j]
+            }}}
+        # Search in Species
+      } else if ("Species" %in% taxa$group[j]){
+        for (i in 1:nrow(taxTab)) {
+          if (taxa$taxon[j] %in% taxTab$Species[i]){
+            taxTab$keep[i] = 1
+            if (is.na(taxTab$keep_taxon[i])){
+              taxTab$keep_taxon[i] = taxa$taxon[j]
+            }}}
+      }
+    }
+  } # closes if loop for data frame input
 
   # Remove genus from species names
   taxTab$Species <- spec.names
@@ -99,10 +189,10 @@ filter_taxa <- function(mga, # mga-class object
   # Update the tax_table
   tax = phyloseq::tax_table(as.matrix(taxTab))
   if (keep) {
-    phyloseq::tax_table(mga_keep$ps.species) <- tax
+    phyloseq::tax_table(mga_keep$ps.taxa) <- tax
   }
   if (drop) {
-    phyloseq::tax_table(mga_drop$ps.species) <- tax
+    phyloseq::tax_table(mga_drop$ps.taxa) <- tax
   }
 
   # Extract selected taxa only
@@ -121,12 +211,13 @@ filter_taxa <- function(mga, # mga-class object
 
   # Filter taxa from ASV table
   if (keep) {
-    mga_keep$ps.species <- phyloseq::prune_taxa(keep.names, mga_keep$ps.species)
+    mga_keep$ps.taxa <- phyloseq::prune_taxa(keep.names, mga_keep$ps.taxa)
   }
   if (drop) {
-    mga_drop$ps.species <- phyloseq::prune_taxa(drop.names, mga_drop$ps.species)
+    mga_drop$ps.taxa <- phyloseq::prune_taxa(drop.names, mga_drop$ps.taxa)
   }
 
+  } # Closes loop for if mga was grouped by taxonomic level
 
   # Convert mga ps tax_table to a data frame
   taxTab2 <- phyloseq::tax_table(mga$ps)
@@ -134,73 +225,151 @@ filter_taxa <- function(mga, # mga-class object
 
   # Add genus to species name in Species column
   spec.names2 <- taxTab2$Species
-  taxTab2$Species <- paste(taxTab2$Genus, taxTab2$Species, sep = " ")
+  taxTab2$Species <- paste(taxTab2$Genus, taxTab2$Species, sep = "_")
 
   # Add column to indicate taxa to keep (yes = 1, no = 0)
   taxTab2$keep = 0
   taxTab2$keep_taxon = NA
 
-  # Search for taxa in taxonomy table
-  for (j in 1:nrow(taxa)) {
-    # Search in Kingdom
-    if ("Kingdom" %in% taxa$group[j]){
+  if (is.vector(taxa) | is.character(taxa)) {
+
+    # Add column to indicate taxonomic level where taxa were identified
+    taxTab2$level = NA
+
+    for (j in 1:length(taxa)) {
+      # Search for each taxon in each row from finest level up
       for (i in 1:nrow(taxTab2)) {
-        if (taxa$taxon[j] %in% taxTab2$Kingdom[i]){
+
+        # Search in Species
+        if (taxa[j] %in% taxTab2$Species[i]) {
           taxTab2$keep[i] = 1
-          taxTab2$keep_taxon[i] = taxa$taxon[j]
-        }}
-      # Search in Phylum
-    } else if ("Phylum" %in% taxa$group[j]){
-      for (i in 1:nrow(taxTab2)) {
-        if (taxa$taxon[j] %in% taxTab2$Phylum[i]){
+
+          # Run only if taxa[j] NOT already found at a finer taxonomic level
+          if (is.na(taxTab2$level)[i] | !any("Species" %in% taxTab2$level[i])) {
+            taxTab2$keep_taxon[i] = taxa[j]
+            taxTab2$level[i] = "Species"
+          }
+          # Search in Genus
+        } else if (taxa[j] %in% taxTab2$Genus[i]) {
           taxTab2$keep[i] = 1
-          if (is.na(taxTab2$keep_taxon[i])){
+
+          # Run only if taxa[j] NOT already found at a finer taxonomic level
+          if (is.na(taxTab2$level)[i] | !any(c("Genus","Species") %in% taxTab2$level[i])) {
+            taxTab2$keep_taxon[i] = taxa[j]
+            taxTab2$level[i] = "Genus"
+          }
+          # Search in Family
+        } else if (taxa[j] %in% taxTab2$Family[i]) {
+          taxTab2$keep[i] = 1
+
+          # Run only if taxa[j] NOT already found at a finer taxonomic level
+          if (is.na(taxTab2$level)[i] | !any(c("Family","Genus","Species") %in% taxTab2$level[i])) {
+            taxTab2$keep_taxon[i] = taxa[j]
+            taxTab2$level[i] = "Family"
+          }
+          # Search in Order
+        } else if (taxa[j] %in% taxTab2$Order[i]) {
+          taxTab2$keep[i] = 1
+
+          # Run only if taxa[j] NOT already found at a finer taxonomic level
+          if (is.na(taxTab2$level)[i] | !any(c("Order","Family","Genus","Species") %in% taxTab2$level[i])) {
+            taxTab2$keep_taxon[i] = taxa[j]
+            taxTab2$level[i] = "Order"
+          }
+          # Search in Class
+        } else if (taxa[j] %in% taxTab2$Class[i]) {
+          taxTab2$keep[i] = 1
+
+          # Run only if taxa[j] NOT already found at a finer taxonomic level
+          if (is.na(taxTab2$level)[i] | !any(c("Class","Order","Family","Genus","Species") %in% taxTab2$level[i])) {
+            taxTab2$keep_taxon[i] = taxa[j]
+            taxTab2$level[i] = "Class"
+          }
+          # Search in Phylum
+        } else if (taxa[j] %in% taxTab2$Phylum[i]) {
+          taxTab2$keep[i] = 1
+
+          # Run only if taxa[j] NOT already found at a finer taxonomic level
+          if (is.na(taxTab2$level)[i] | !any(c("Phylum","Class","Order","Family","Genus","Species") %in% taxTab2$level[i])) {
+            taxTab2$keep_taxon[i] = taxa[j]
+            taxTab2$level[i] = "Phylum"
+          }
+          # Search in Kingdom
+        } else if (taxa[j] %in% taxTab2$Kingdom[i]) {
+          taxTab2$keep[i] = 1
+
+          # Run only if taxa[j] NOT already found at a finer taxonomic level
+          if (is.na(taxTab2$level)[i] | !any(c("Kingdom","Phylum","Class","Order","Family","Genus","Species") %in% taxTab2$level[i])) {
+            taxTab2$keep_taxon[i] = taxa[j]
+            taxTab2$level[i] = "Kingdom"
+          }
+          # Otherwise leave blank
+        }
+      }
+    } # closes search for loop for vector input
+
+  } else if (is.data.frame(taxa) == TRUE) {
+
+    # Search for taxa in taxonomy table
+    for (j in 1:nrow(taxa)) {
+      # Search in Kingdom
+      if ("Kingdom" %in% taxa$group[j]){
+        for (i in 1:nrow(taxTab2)) {
+          if (taxa$taxon[j] %in% taxTab2$Kingdom[i]){
+            taxTab2$keep[i] = 1
             taxTab2$keep_taxon[i] = taxa$taxon[j]
-          }}}
-      # Search in Class
-    } else if ("Class" %in% taxa$group[j]){
-      for (i in 1:nrow(taxTab2)) {
-        if (taxa$taxon[j] %in% taxTab2$Class[i]){
-          taxTab2$keep[i] = 1
-          if (is.na(taxTab2$keep_taxon[i])){
-            taxTab2$keep_taxon[i] = taxa$taxon[j]
-          }}}
-      # Search in Order
-    } else if ("Order" %in% taxa$group[j]){
-      for (i in 1:nrow(taxTab2)) {
-        if (taxa$taxon[j] %in% taxTab2$Order[i]){
-          taxTab2$keep[i] = 1
-          if (is.na(taxTab2$keep_taxon[i])){
-            taxTab2$keep_taxon[i] = taxa$taxon[j]
-          }}}
-      # Search in Family
-    } else if ("Family" %in% taxa$group[j]){
-      for (i in 1:nrow(taxTab2)) {
-        if (taxa$taxon[j] %in% taxTab2$Family[i]){
-          taxTab2$keep[i] = 1
-          if (is.na(taxTab2$keep_taxon[i])){
-            taxTab2$keep_taxon[i] = taxa$taxon[j]
-          }}}
-      # Search in Genus
-    } else if ("Genus" %in% taxa$group[j]){
-      for (i in 1:nrow(taxTab2)) {
-        if (taxa$taxon[j] %in% taxTab2$Genus[i]){
-          taxTab2$keep[i] = 1
-          if (is.na(taxTab2$keep_taxon[i])){
-            taxTab2$keep_taxon[i] = taxa$taxon[j]
-          }}}
-      # Search in Species
-    } else if ("Species" %in% taxa$group[j]){
-      for (i in 1:nrow(taxTab2)) {
-        if (taxa$taxon[j] %in% taxTab2$Species[i]){
-          taxTab2$keep[i] = 1
-          if (is.na(taxTab2$keep_taxon[i])){
-            taxTab2$keep_taxon[i] = taxa$taxon[j]
-          }}}
-    } else {
-      taxTab2$keep[i] = 0
-      taxTab2$keep_taxon[i] = NA}
-  }
+          }}
+        # Search in Phylum
+      } else if ("Phylum" %in% taxa$group[j]){
+        for (i in 1:nrow(taxTab2)) {
+          if (taxa$taxon[j] %in% taxTab2$Phylum[i]){
+            taxTab2$keep[i] = 1
+            if (is.na(taxTab2$keep_taxon[i])){
+              taxTab2$keep_taxon[i] = taxa$taxon[j]
+            }}}
+        # Search in Class
+      } else if ("Class" %in% taxa$group[j]){
+        for (i in 1:nrow(taxTab2)) {
+          if (taxa$taxon[j] %in% taxTab2$Class[i]){
+            taxTab2$keep[i] = 1
+            if (is.na(taxTab2$keep_taxon[i])){
+              taxTab2$keep_taxon[i] = taxa$taxon[j]
+            }}}
+        # Search in Order
+      } else if ("Order" %in% taxa$group[j]){
+        for (i in 1:nrow(taxTab2)) {
+          if (taxa$taxon[j] %in% taxTab2$Order[i]){
+            taxTab2$keep[i] = 1
+            if (is.na(taxTab2$keep_taxon[i])){
+              taxTab2$keep_taxon[i] = taxa$taxon[j]
+            }}}
+        # Search in Family
+      } else if ("Family" %in% taxa$group[j]){
+        for (i in 1:nrow(taxTab2)) {
+          if (taxa$taxon[j] %in% taxTab2$Family[i]){
+            taxTab2$keep[i] = 1
+            if (is.na(taxTab2$keep_taxon[i])){
+              taxTab2$keep_taxon[i] = taxa$taxon[j]
+            }}}
+        # Search in Genus
+      } else if ("Genus" %in% taxa$group[j]){
+        for (i in 1:nrow(taxTab2)) {
+          if (taxa$taxon[j] %in% taxTab2$Genus[i]){
+            taxTab2$keep[i] = 1
+            if (is.na(taxTab2$keep_taxon[i])){
+              taxTab2$keep_taxon[i] = taxa$taxon[j]
+            }}}
+        # Search in Species
+      } else if ("Species" %in% taxa$group[j]){
+        for (i in 1:nrow(taxTab2)) {
+          if (taxa$taxon[j] %in% taxTab2$Species[i]){
+            taxTab2$keep[i] = 1
+            if (is.na(taxTab2$keep_taxon[i])){
+              taxTab2$keep_taxon[i] = taxa$taxon[j]
+            }}}
+      }
+    }
+  } # closes if loop for data frame input
 
   # Remove genus from species names
   taxTab2$Species <- spec.names2
@@ -234,10 +403,18 @@ filter_taxa <- function(mga, # mga-class object
 
 
   if (keep) {
+
+    # Aggregate by taxonomic level
+    if (!is.null(group.taxa)){
+      mga_keep$ps.taxa <- phyloseq::tax_glom(mga_keep$ps, taxrank = group.taxa, NArm = FALSE)
+    } else {
+      specs <- phyloseq::tax_glom(mga_keep$ps, taxrank = 'Species', NArm = FALSE)
+    }
+
     if (network) {
 
       # Construct the network
-      mga_keep$net <- phyloseq::make_network(if (group.species){mga_keep$ps.species} else{mga_keep$ps},
+      mga_keep$net <- phyloseq::make_network(if (!is.null(group.taxa)){mga_keep$ps.taxa} else{mga_keep$ps},
                                     type = network.args$type,
                                     distance = network.args$distance,
                                     max.dist = network.args$max.dist,
@@ -257,26 +434,30 @@ filter_taxa <- function(mga, # mga-class object
       sampledata1 <- as.data.frame(phyloseq::sample_data(mga_keep$ps)) # subset sample_info as a data frame
     }
 
-    # Sum the presences in each sample for species richness
-    rich1 <- nrow(phyloseq::tax_table(mga_keep$ps.species)) # species count in sample
-    # total individuals from all species in each sample
+    # Sum the presences in each sample for taxonomic richness
+    if (!is.null(group.taxa)){
+      rich1 <- nrow(phyloseq::tax_table(mga_keep$ps.taxa)) # taxon count in sample
+    } else {
+      rich1 <- nrow(phyloseq::tax_table(specs)) # species count in sample if no taxonomic level selected
+    }
+    # total read count from all ASVs in each sample
     n1 <- apply(phyloseq::otu_table(mga_keep$ps), 1, function(x) sum(x))
     ASVs1 <- ncol(phyloseq::otu_table(mga_keep$ps)) # total number of ASVs in site
 
     # Alpha species diversity measures
     # Shannon index
-    ps_alpha_div_1 <- phyloseq::estimate_richness(if (group.species){mga_keep$ps.species} else{mga_keep$ps}, split = TRUE, measure = "Shannon")
+    ps_alpha_div_1 <- phyloseq::estimate_richness(if (!is.null(group.taxa)){mga_keep$ps.taxa} else{mga_keep$ps}, split = TRUE, measure = "Shannon")
     # Simpson index
-    ps_alpha_div2_1 <- phyloseq::estimate_richness(if (group.species){mga_keep$ps.species} else{mga_keep$ps}, split = TRUE, measure = "Simpson")
+    ps_alpha_div2_1 <- phyloseq::estimate_richness(if (!is.null(group.taxa)){mga_keep$ps.taxa} else{mga_keep$ps}, split = TRUE, measure = "Simpson")
 
     # Phylogenetic diversity
     # Test if phy_tree is present
-    if (nrow(phyloseq::tax_table(if (group.species){mga_keep$ps.species} else{mga_keep$ps})) <= 1) {
+    if (nrow(phyloseq::tax_table(if (!is.null(group.taxa)){mga_keep$ps.taxa} else{mga_keep$ps})) <= 1) {
       warning("filter_taxa attempted to reduce tree to 1 or fewer tips. tree replaced with NULL. PD will have NA value.")
       PD1 <- NA
     } else {
       # Sum all branch lengths in the phylogenetic tree
-      PD1 <- sum(phyloseq::tree_layout(phyloseq::phy_tree(if (group.species){mga_keep$ps.species} else{mga_keep$ps}))$edgeDT[["edge.length"]])
+      PD1 <- sum(phyloseq::tree_layout(phyloseq::phy_tree(if (!is.null(group.taxa)){mga_keep$ps.taxa} else{mga_keep$ps}))$edgeDT[["edge.length"]])
     }
 
     if (network) {
@@ -286,7 +467,7 @@ filter_taxa <- function(mga, # mga-class object
                                     ps_alpha_div2_1,
                                     rich = rich1,
                                     PD = PD1,
-                                    n.indivs = n1,
+                                    reads = n1,
                                     ASVs = ASVs1,
                                     vertices = v1,
                                     edges = e1,
@@ -295,8 +476,8 @@ filter_taxa <- function(mga, # mga-class object
 
       results.samples1 <- cbind(results.samples1, sampledata1)
 
-      if (group.species) {
-        degree.samp1 <- as.data.frame(t(phyloseq::otu_table(mga_keep$ps.species)))
+      if (!is.null(group.taxa)) {
+        degree.samp1 <- as.data.frame(t(phyloseq::otu_table(mga_keep$ps.taxa)))
         degree.samp1$degrees <- degrees1
       } else {
         degree.samp1 <- as.data.frame(t(phyloseq::otu_table(mga_keep$ps)))
@@ -309,7 +490,7 @@ filter_taxa <- function(mga, # mga-class object
                                     ps_alpha_div2_1,
                                     rich = rich1,
                                     PD = PD1,
-                                    n.indivs = n1,
+                                    reads = n1,
                                     ASVs = ASVs1)
 
       results.samples1 <- cbind(results.samples1, sampledata1)
@@ -318,7 +499,7 @@ filter_taxa <- function(mga, # mga-class object
 
     # Return filtered mga-class object
     mga_keep$ASVtab <- as.integer(phyloseq::otu_table(mga_keep$ps))
-    mga_keep$taxTab <- if (group.species) {keep.only} else {keep.only2}
+    mga_keep$taxTab <- if (!is.null(group.taxa)){keep.only} else {keep.only2}
     mga_keep$results.samples <- results.samples1
 
     if (network) {
@@ -330,10 +511,18 @@ filter_taxa <- function(mga, # mga-class object
   }
 
   if (drop) {
+
+    # Aggregate by taxonomic level
+    if (!is.null(group.taxa)){
+      mga_drop$ps.taxa <- phyloseq::tax_glom(mga_drop$ps, taxrank = group.taxa, NArm = FALSE)
+    } else {
+      specs2 <- phyloseq::tax_glom(mga_drop$ps, taxrank = 'Species', NArm = FALSE)
+    }
+
     if (network) {
 
       # Construct the network
-      mga_drop$net <- phyloseq::make_network(if (group.species){mga_drop$ps.species} else{mga_drop$ps},
+      mga_drop$net <- phyloseq::make_network(if (!is.null(group.taxa)){mga_drop$ps.taxa} else{mga_drop$ps},
                                     type = network.args$type,
                                     distance = network.args$distance,
                                     max.dist = network.args$max.dist,
@@ -353,25 +542,29 @@ filter_taxa <- function(mga, # mga-class object
       sampledata2 <- as.data.frame(phyloseq::sample_data(mga_drop$ps)) # subset sample_info as a data frame
     }
 
-    # Sum the presences in each sample for species richness
-    rich2 <- nrow(phyloseq::tax_table(mga_drop$ps.species)) # species count in sample
+    # Sum the presences in each sample for taxonomic richness
+    if (!is.null(group.taxa)){
+      rich2 <- nrow(phyloseq::tax_table(mga_drop$ps.taxa)) # taxon count in sample
+    } else {
+      rich2 <- nrow(phyloseq::tax_table(specs2)) # species count in sample if no taxonomic level selected
+    }
     # total individuals from all species in each sample
     n2 <- apply(phyloseq::otu_table(mga_drop$ps), 1, function(x) sum(x))
     ASVs2 <- ncol(phyloseq::otu_table(mga_drop$ps)) # total number of ASVs in site
 
     # Alpha species diversity measures
     # Shannon index
-    ps_alpha_div_2 <- phyloseq::estimate_richness(if (group.species){mga_drop$ps.species} else{mga_drop$ps}, split = TRUE, measure = "Shannon")
+    ps_alpha_div_2 <- phyloseq::estimate_richness(if (!is.null(group.taxa)){mga_drop$ps.taxa} else{mga_drop$ps}, split = TRUE, measure = "Shannon")
     # Simpson index
-    ps_alpha_div2_2 <- phyloseq::estimate_richness(if (group.species){mga_drop$ps.species} else{mga_drop$ps}, split = TRUE, measure = "Simpson")
+    ps_alpha_div2_2 <- phyloseq::estimate_richness(if (!is.null(group.taxa)){mga_drop$ps.taxa} else{mga_drop$ps}, split = TRUE, measure = "Simpson")
 
     # Phylogenetic diversity
-    if (nrow(phyloseq::tax_table(if (group.species){mga_keep$ps.species} else{mga_keep$ps})) <= 1) {
+    if (nrow(phyloseq::tax_table(if (!is.null(group.taxa)){mga_drop$ps.taxa} else{mga_drop$ps})) <= 1) {
       warning("filter_taxa attempted to reduce tree to 1 or fewer tips. tree replaced with NULL. PD will have NA value.")
       PD2 <- NA
     } else {
       # Sum all branch lengths in the phylogenetic tree
-      PD2 <- sum(phyloseq::tree_layout(phyloseq::phy_tree(if (group.species){mga_keep$ps.species} else{mga_keep$ps}))$edgeDT[["edge.length"]])
+      PD2 <- sum(phyloseq::tree_layout(phyloseq::phy_tree(if (!is.null(group.taxa)){mga_keep$ps.taxa} else{mga_keep$ps}))$edgeDT[["edge.length"]])
     }
 
     if (network) {
@@ -381,7 +574,7 @@ filter_taxa <- function(mga, # mga-class object
                                     ps_alpha_div2_2,
                                     rich = rich2,
                                     PD = PD2,
-                                    n.indivs = n2,
+                                    reads = n2,
                                     ASVs = ASVs2,
                                     vertices = v2,
                                     edges = e2,
@@ -390,8 +583,8 @@ filter_taxa <- function(mga, # mga-class object
 
       results.samples2 <- cbind(results.samples2, sampledata2)
 
-      if (group.species) {
-        degree.samp2 <- as.data.frame(t(phyloseq::otu_table(mga_drop$ps.species)))
+      if (!is.null(group.taxa)) {
+        degree.samp2 <- as.data.frame(t(phyloseq::otu_table(mga_drop$ps.taxa)))
         degree.samp2$degrees <- degrees2
       } else {
         degree.samp2 <- as.data.frame(t(phyloseq::otu_table(mga_drop$ps)))
@@ -413,7 +606,7 @@ filter_taxa <- function(mga, # mga-class object
 
     # Return filtered mga-class object
     mga_drop$ASVtab <- as.integer(phyloseq::otu_table(mga_drop$ps))
-    mga_drop$taxTab <- if (group.species) {drop.only} else {drop.only2}
+    mga_drop$taxTab <- if (!is.null(group.taxa)){drop.only} else {drop.only2}
     mga_drop$results.samples <- results.samples2
 
     if (network) {
@@ -435,7 +628,7 @@ filter_taxa <- function(mga, # mga-class object
   } else { # Did NOT identify any selected taxa
 
     warning("No taxa selected for filtering were identified in the mga object. Please check if taxa are present in the taxonomy table.")
-    return(mga = mga)
+    return(mga)
   }
 }
 
@@ -924,3 +1117,6 @@ filter_taxa <- function(mga, # mga-class object
 #
 #   return(mga)
 # }
+
+
+
