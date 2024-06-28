@@ -1,12 +1,12 @@
-\name{filter_taxa}
-\alias{filter_taxa}
+\name{filter_mga}
+\alias{filter_mga}
 \title{Prune mga-class objects by key defined taxa
 }
 \description{
 Filters \code{mga-class} objects produced by \code{\link{mga}} for select taxa that are specified in a table with columns for the taxa names and taxonomic level at which to search. Selected taxa can keep kept, dropped, or both as separate \code{mga-class} objects.
 }
 \usage{
-drop_taxa(mga, keep = TRUE, drop = TRUE, taxa = NULL, group.taxa = "Species", network = TRUE, network.args = list(type = "taxa", distance = "jaccard", max.dist = 0.45, keep.isolates = TRUE))
+filter_mga(mga, keep = TRUE, drop = TRUE, taxa = NULL, group.taxa = "Species", network = TRUE, network.args = list(type = "taxa", distance = "jaccard", max.dist = 0.45, keep.isolates = TRUE))
 }
 \arguments{
   \item{mga}{A \code{mga-class} object produced by \code{\link{mga}}.}

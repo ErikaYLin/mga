@@ -1,6 +1,6 @@
 #' @export
 # Taxonomic filtering and pruning
-filter_taxa <- function(mga, # mga-class object
+filter_mga <- function(mga, # mga-class object
                         keep = TRUE, # keep only selected taxa in output
                         drop = TRUE, # drop only selected taxa in output
                         taxa = NULL, # .csv object listing taxa to search for with columns named "taxon" and "group"
