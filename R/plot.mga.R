@@ -3,12 +3,17 @@
 
 plot.mga <- function(mga,
                      type = "tree", # "tree", "network", and eventually "errors"
-                     group.species = TRUE, # uses mga$ps.species over mga$ps for tree
+                     group.taxa = TRUE, # uses mga$ps.taxa over mga$ps for tree
                      ...) {
 
   # Plot phylogenetic tree
   if (type == "tree") {
-  plot(phyloseq::phy_tree(if (group.species){mga$ps.species} else{mga$ps}), ...)
+    # Do not run for group.taxa if ps.taxa does not exist
+    if (group.taxa & is.null(mga$ps.taxa)) {
+      stop("mga object not previously grouped by taxon. Check if 'ps.taxa' exists in mga object.")
+    } else {
+      plot(phyloseq::phy_tree(if (group.taxa){mga$ps.taxa} else{mga$ps}), ...)
+    }
   } else
 
   # Plot co-occurrence network
