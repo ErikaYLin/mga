@@ -17,4 +17,4 @@ export("mga")
 S3method(plot,mga)
 
 #TAXONOMIC FILTERING FUNCTION
-export("filter_taxa")
+export("filter_mga")
