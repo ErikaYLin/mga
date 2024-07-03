@@ -23,7 +23,7 @@ filter_mga(mga, keep = TRUE, drop = TRUE, taxa = NULL, group.taxa = "Species", n
 \value{
 Returns the same \code{mga-class} object, filtered to keep and/or drop only the taxa specified. See \code{\link{mga}} for the full list of objects returned in a \code{mga-class} object. If both \code{keep = TRUE} and \code{drop = TRUE}, a list of both \code{mga} objects is returned as 'mga_keep' and 'mga_drop'.
 
-Note that \code{seqtabAll}, \code{sampledata}, and \code{phylo_tree} remain unchanged from the original \code{mga} object fed into the function. However, the updated phylogenetic tree can be extracted from the pruned \code{phyloseq-class} objects ('ps' and/or 'ps.taxa') for plotting using \code{link[mga]{plot.mga}}.
+Note that \code{seqtabAll}, \code{sampledata}, and \code{phylo_tree} remain unchanged from the original \code{mga} object fed into the function. However, the updated phylogenetic tree can be extracted from the pruned \code{phyloseq-class} objects ('ps' and/or 'ps.taxa') for plotting using \code{\link[mga]{plot.mga}}.
 
 }
 \author{Erika Y. Lin}
