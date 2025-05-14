@@ -12,5 +12,5 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 4.0.0), dada2, phyloseq
-Imports: stringr, DECIPHER, Biostrings, phangorn, igraph, methods
+Imports: stringr, DECIPHER, Biostrings, phangorn, igraph, methods, BiocManager
 Suggests: ggplot2, knitr, rmarkdown, nlme, CooccurrenceAffinity
