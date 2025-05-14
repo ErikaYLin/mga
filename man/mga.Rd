@@ -5,7 +5,7 @@
 mga(fastq.Fs, fastq.Rs, filtFs, filtRs, refFasta, metadata = NULL, make.unique = TRUE, group.taxa = "Species", tree.args = list(k = 4, inv = 0.2, model = "GTR", rearrangement = "stochastic"), network = TRUE, network.args = list(type = "taxa", distance = "jaccard", max.dist = 0.45, keep.isolates = TRUE), seed = 100, multithread = FALSE, verbose = TRUE)
 }
 \description{
-Simple microbiome analysis by processing filtered genetic sequencing data to produce a \code{mga-class} object with tabulated OTUs/ASVs, taxonomic classification, phylogenetic trees, and sample metadata. \code{mga} also constructs co-occurrence networks, and computes metrics of community structure and network topology. \code{mga} makes use of the \code{\link[phyloseq]} and \code{\link[dada2]} workflows for sequence processing. Any primers should be trimmed from sequences prior to analysis.
+Simple microbiome analysis by processing filtered genetic sequencing data to produce a \code{mga-class} object with tabulated OTUs/ASVs, taxonomic classification, phylogenetic trees, and sample metadata. \code{mga} also constructs co-occurrence networks, and computes metrics of community structure and network topology. \code{mga} makes use of the \code{\link[phyloseq]{phyloseq-package}} and \code{\link[dada2]{dada2-package}} workflows for sequence processing. Any primers should be trimmed from sequences prior to analysis.
 }
 \arguments{
   \item{fastq.Fs, fastq.Rs}{File paths for forward (Fs) and reverse (Rs) raw fastq files.}
