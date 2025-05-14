@@ -8,6 +8,4 @@ To install the development version of mga, run the following lines of code:
 
 `install.packages("devtools")`
 
-`library(devtools)`
-
-`install_github("https://github.com/ErikaYLin/mga")`
+`devtools::install_github("https://github.com/ErikaYLin/mga")`
